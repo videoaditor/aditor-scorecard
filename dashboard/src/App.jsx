@@ -11,7 +11,7 @@ const METRICS = {
   posts:          { name: 'Social Posts',      icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
   mrrDelta:       { name: 'MRR Δ',              icon: '📈', unit: '€±', dir: 'higher', green: 1000, yellow: 0, agg: 'sum', weekOnly: true },
-  mrr:            { name: 'MRR',               icon: '💰', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last' },
+  mrr:            { name: 'MRR',               icon: '💰', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', quarterOnly: true },
   margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35, agg: 'avg', quarterOnly: true },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum' },
   cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
