@@ -359,7 +359,7 @@ function App() {
       const filtered = filterByMonth(allWeeks, month, year)
       // Calculate MRR delta for each week
       const withDelta = filtered.map((w, i) => {
-        let mrrDelta = null
+        let mrrDelta = 0
         if (w.mrr !== null && w.mrr !== undefined) {
           if (i > 0 && filtered[i-1].mrr !== null) {
             mrrDelta = w.mrr - filtered[i-1].mrr
