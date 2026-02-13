@@ -10,8 +10,9 @@ const METRICS = {
   calls:          { name: 'Sales Calls',       icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
   posts:          { name: 'Social Posts',      icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
-  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last' },
-  margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35, agg: 'avg' },
+  mrrDelta:       { name: 'MRR Δ',              icon: '📈', unit: '€±', dir: 'higher', green: 1000, yellow: 0, agg: 'sum', weekOnly: true },
+  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', quarterOnly: true },
+  margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35, agg: 'avg', quarterOnly: true },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum' },
   cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
   delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
@@ -31,7 +32,7 @@ const DRI = {
 
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts'] },
-  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['closeRate', 'mrr', 'margin'] },
+  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['closeRate', 'mrrDelta', 'mrr', 'margin'] },
   { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins'] },
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCuts', 'testPassed', 'goodEditors'] },
 ]
@@ -143,6 +144,11 @@ const fmt = (val, key) => {
   const m = METRICS[key]
   if (!m) return String(val)
   if (m.unit === '%') return `${val}%`
+  if (m.unit === '€±') {
+    const sign = val >= 0 ? '+' : ''
+    const abs = Math.abs(val)
+    return abs >= 1000 ? `${sign}€${(val/1000).toFixed(1)}k` : `${sign}€${val}`
+  }
   if (m.unit === '€') return val >= 1000 ? `€${(val/1000).toFixed(1)}k` : `€${val}`
   if (m.unit === 'h') return `${val}h`
   return String(val)
@@ -216,7 +222,14 @@ const DeptCard = ({ dept, columns, view }) => (
       </div>
     </div>
     <div className="dept-metrics">
-      {dept.metrics.map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+      {dept.metrics
+        .filter(k => {
+          const m = METRICS[k]
+          if (view === 'month' && m?.quarterOnly) return false
+          if (view === 'quarter' && m?.weekOnly) return false
+          return true
+        })
+        .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
     </div>
   </div>
 )
@@ -312,14 +325,29 @@ function App() {
   const columns = useMemo(() => {
     if (view === 'month') {
       const filtered = filterByMonth(allWeeks, month, year)
-      // Mark current week
-      const withCurrent = filtered.map((w, i) => {
+      // Calculate MRR delta for each week
+      const withDelta = filtered.map((w, i) => {
+        let mrrDelta = null
+        if (w.mrr !== null && w.mrr !== undefined) {
+          if (i > 0 && filtered[i-1].mrr !== null) {
+            mrrDelta = w.mrr - filtered[i-1].mrr
+          } else {
+            // First week of month: check previous month's last week
+            const prevWeeks = allWeeks.filter(pw => {
+              const d = new Date(pw.start)
+              return d < new Date(w.start) && pw.mrr !== null
+            })
+            if (prevWeeks.length > 0) {
+              mrrDelta = w.mrr - prevWeeks[prevWeeks.length - 1].mrr
+            }
+          }
+        }
         const endDate = w.end ? new Date(w.end) : null
         if (endDate) endDate.setHours(23, 59, 59)
         const isCurrent = endDate && today <= endDate
-        return { ...w, label: `W${i + 1}`, isCurrent }
+        return { ...w, mrrDelta, label: `W${i + 1}`, isCurrent }
       })
-      return padToFour(withCurrent)
+      return padToFour(withDelta)
     } else {
       return aggregateToMonths(allWeeks, quarter, year)
     }
