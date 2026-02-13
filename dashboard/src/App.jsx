@@ -116,12 +116,17 @@ const aggregateToMonths = (weeks, quarter, year) => {
   return monthlyData
 }
 
-// Pad weeks to 4 + add monthly total column
-const padToFour = (items) => {
+// Pad weeks to 4 + optionally add monthly total column
+const padToFour = (items, includeTotal = true) => {
   const weeks = [...items]
   while (weeks.length < 4) {
     weeks.push({ label: `W${weeks.length + 1}`, empty: true })
   }
+  
+  if (!includeTotal) {
+    return weeks.slice(0, 4)
+  }
+  
   const filled = weeks.filter(w => !w.empty).slice(0, 4)
   
   // Calculate monthly total
