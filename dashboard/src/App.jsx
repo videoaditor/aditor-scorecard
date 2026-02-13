@@ -102,14 +102,8 @@ const fmt = (val, key) => {
   return String(val)
 }
 
-const weekLabel = (row) => {
-  if (row.empty && row.start) {
-    const s = row.start.split('-')
-    return `${s[1]}/${s[2]}`
-  }
-  if (!row.start) return ''
-  const s = row.start.split('-')
-  return `${s[1]}/${s[2]}`
+const weekLabel = (row, idx) => {
+  return `W${idx + 1}`
 }
 
 const StatusDot = ({ status }) => <span className={`status-dot status-${status}`} />
@@ -191,9 +185,9 @@ const DeptCard = ({ dept, weeks, currentWeekIdx }) => (
     <div className="time-headers">
       <div className="time-label-spacer"></div>
       <div className="time-labels">
-        {weeks.map((w) => (
+        {weeks.map((w, i) => (
           <div key={w.week} className={`time-label ${w.empty ? 'empty' : ''}`}>
-            {weekLabel(w)}
+            {weekLabel(w, i)}
           </div>
         ))}
       </div>
