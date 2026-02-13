@@ -116,13 +116,31 @@ const aggregateToMonths = (weeks, quarter, year) => {
   return monthlyData
 }
 
-// Pad weeks to always have 4 columns
-const padToFour = (items, startDate) => {
-  const result = [...items]
-  while (result.length < 4) {
-    result.push({ label: `W${result.length + 1}`, empty: true })
+// Pad weeks to 4 + add monthly total column
+const padToFour = (items) => {
+  const weeks = [...items]
+  while (weeks.length < 4) {
+    weeks.push({ label: `W${weeks.length + 1}`, empty: true })
   }
-  return result.slice(0, 4)
+  const filled = weeks.filter(w => !w.empty).slice(0, 4)
+  
+  // Calculate monthly total
+  const total = { label: 'Total', empty: false, isTotal: true, isCurrent: false }
+  Object.keys(METRICS).forEach(key => {
+    const m = METRICS[key]
+    const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined)
+    if (vals.length === 0) {
+      total[key] = null
+    } else if (m.agg === 'sum' || m.unit === '€±' || m.unit === '±') {
+      total[key] = vals.reduce((a, b) => a + b, 0)
+    } else if (m.agg === 'avg') {
+      total[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+    } else if (m.agg === 'last') {
+      total[key] = vals[vals.length - 1]
+    }
+  })
+  
+  return [...weeks.slice(0, 4), total]
 }
 
 const getStatus = (value, key) => {
@@ -194,11 +212,12 @@ const MetricRow = ({ metricKey, columns, view }) => {
           }
           const val = col[metricKey]
           const isCurrent = col.isCurrent
-          const status = isCurrent ? 'current' : getStatus(val, metricKey)
+          const isTotal = col.isTotal
+          const status = (isCurrent || isTotal) ? 'current' : getStatus(val, metricKey)
           return (
-            <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''}`}>
-              {!isCurrent && <StatusDot status={status} />}
-              <span className={`metric-value status-text-${status}`}>{fmt(val, metricKey)}</span>
+            <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+              {!isCurrent && !isTotal && <StatusDot status={status} />}
+              <span className={`metric-value ${isTotal ? 'total-value' : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
             </div>
           )
         })}
@@ -220,8 +239,8 @@ const DeptCard = ({ dept, columns, view }) => (
       <div className="time-label-spacer"></div>
       <div className="time-labels">
         {columns.map((col, i) => (
-          <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''}`}>
-            {view === 'month' ? `W${i + 1}` : col.label}
+          <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
+            {col.isTotal ? 'Total' : (view === 'month' ? `W${i + 1}` : col.label)}
           </div>
         ))}
       </div>

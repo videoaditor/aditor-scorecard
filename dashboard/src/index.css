@@ -380,6 +380,24 @@ body {
   opacity: 0.7;
 }
 
+/* Total column */
+.metric-cell.total-cell {
+  border-left: 1px solid var(--border);
+  padding-left: 8px;
+}
+
+.total-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.time-label.total-label {
+  color: var(--text-dim);
+  font-weight: 600;
+  border-left: 1px solid var(--border);
+  padding-left: 8px;
+}
+
 .metric-value {
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
