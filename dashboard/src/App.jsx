@@ -180,14 +180,17 @@ const fmt = (val, key) => {
 const StatusDot = ({ status }) => <span className={`status-dot status-${status}`} />
 
 const Avatar = ({ person }) => (
-  <div className="dri-avatar" title={person.name}>
-    {person.img ? (
-      <img src={person.img} alt={person.name} className="dri-img" />
-    ) : (
-      <span style={{ background: `linear-gradient(135deg, ${person.color}, ${person.color}88)` }}>
-        {person.initials}
-      </span>
-    )}
+  <div className="dri-person" title={person.name}>
+    <div className="dri-avatar">
+      {person.img ? (
+        <img src={person.img} alt={person.name} className="dri-img" />
+      ) : (
+        <span style={{ background: `linear-gradient(135deg, ${person.color}, ${person.color}88)` }}>
+          {person.initials}
+        </span>
+      )}
+    </div>
+    <span className="dri-name">{person.name}</span>
   </div>
 )
 

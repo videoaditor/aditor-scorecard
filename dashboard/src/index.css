@@ -246,13 +246,19 @@ body {
 /* DRI Avatars */
 .dri-avatars {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   margin-left: auto;
 }
 
+.dri-person {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .dri-avatar {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--surface);
@@ -265,8 +271,10 @@ body {
   object-fit: cover;
 }
 
-.dri-avatars .dri-avatar + .dri-avatar {
-  margin-left: -4px;
+.dri-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
 }
 
 /* Time Headers */
