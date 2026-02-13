@@ -22,12 +22,12 @@ const METRICS = {
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4 },
 }
 
-// DRI assignments with initials and colors
+// DRI assignments with photos
 const DRI = {
-  marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6' }],
-  sales:     [{ name: 'Shawn', initials: 'SH', color: '#EC4899' }, { name: 'Alan', initials: 'AS', color: '#8B5CF6' }],
-  cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316' }],
-  people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E' }],
+  marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
+  sales:     [{ name: 'Shawn', initials: 'SH', color: '#EC4899', img: './avatars/shawn.jpg' }, { name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
+  cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }],
+  people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
 }
 
 const DEPARTMENTS = [
@@ -115,14 +115,14 @@ const weekLabel = (row) => {
 const StatusDot = ({ status }) => <span className={`status-dot status-${status}`} />
 
 const Avatar = ({ person }) => (
-  <div
-    className="dri-avatar"
-    title={person.name}
-    style={{
-      background: `linear-gradient(135deg, ${person.color}, ${person.color}88)`,
-    }}
-  >
-    {person.initials}
+  <div className="dri-avatar" title={person.name}>
+    {person.img ? (
+      <img src={person.img} alt={person.name} className="dri-img" />
+    ) : (
+      <span style={{ background: `linear-gradient(135deg, ${person.color}, ${person.color}88)` }}>
+        {person.initials}
+      </span>
+    )}
   </div>
 )
 
