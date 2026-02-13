@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 
 const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:R100`
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:S100`
 
-const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount']
+const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','followers']
 
 const METRICS = {
   cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
@@ -21,6 +21,7 @@ const METRICS = {
   testCuts:       { name: 'Test Cuts',         icon: '🎬', unit: '',   dir: 'higher', green: 5,   yellow: 2, agg: 'sum' },
   testPassed:     { name: 'Tests Passed',      icon: '✅', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
+  followers:      { name: 'Follower Growth',  icon: '📊', unit: '±',  dir: 'higher', green: 100, yellow: 50, agg: 'sum' },
 }
 
 const DRI = {
@@ -31,7 +32,7 @@ const DRI = {
 }
 
 const DEPARTMENTS = [
-  { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts'] },
+  { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
   { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['closeRate', 'mrrDelta', 'mrr', 'margin'] },
   { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins'] },
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCuts', 'testPassed', 'goodEditors'] },
@@ -144,6 +145,10 @@ const fmt = (val, key) => {
   const m = METRICS[key]
   if (!m) return String(val)
   if (m.unit === '%') return `${val}%`
+  if (m.unit === '±') {
+    const sign = val >= 0 ? '+' : ''
+    return `${sign}${val}`
+  }
   if (m.unit === '€±') {
     const sign = val >= 0 ? '+' : ''
     const abs = Math.abs(val)
