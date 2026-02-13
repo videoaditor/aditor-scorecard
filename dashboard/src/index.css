@@ -83,7 +83,65 @@ body {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
+}
+
+/* Period Selector */
+.period-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.period-select {
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.period-select:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.period-select:focus {
+  border-color: var(--purple);
+}
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.toggle-btn.active {
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
 }
 
 /* Health Summary */
@@ -125,39 +183,6 @@ body {
   height: 8px;
   border-radius: 50%;
   background: currentColor;
-}
-
-/* Time Toggle */
-.time-toggle {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-
-.toggle-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-dim);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.toggle-btn.active {
-  color: var(--text);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 /* Cards Grid */

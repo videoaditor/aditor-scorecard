@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:R100`
@@ -6,23 +6,22 @@ const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq
 const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount']
 
 const METRICS = {
-  cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150 },
-  calls:          { name: 'Sales Calls',       icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3 },
-  posts:          { name: 'Social Posts',      icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4 },
-  closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20 },
-  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000 },
-  margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35 },
-  cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20 },
-  cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5 },
-  delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72 },
-  wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3 },
-  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 10,  yellow: 5 },
-  testCuts:       { name: 'Test Cuts',         icon: '🎬', unit: '',   dir: 'higher', green: 5,   yellow: 2 },
-  testPassed:     { name: 'Tests Passed',      icon: '✅', unit: '',   dir: 'higher', green: 3,   yellow: 1 },
-  goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4 },
+  cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
+  calls:          { name: 'Sales Calls',       icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
+  posts:          { name: 'Social Posts',      icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
+  closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
+  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last' },
+  margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35, agg: 'avg' },
+  cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum' },
+  cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
+  delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
+  wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
+  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'sum' },
+  testCuts:       { name: 'Test Cuts',         icon: '🎬', unit: '',   dir: 'higher', green: 5,   yellow: 2, agg: 'sum' },
+  testPassed:     { name: 'Tests Passed',      icon: '✅', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum' },
+  goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
 }
 
-// DRI assignments with photos
 const DRI = {
   marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
   sales:     [{ name: 'Shawn', initials: 'SH', color: '#EC4899', img: './avatars/shawn.jpg' }, { name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
@@ -37,7 +36,8 @@ const DEPARTMENTS = [
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCuts', 'testPassed', 'goodEditors'] },
 ]
 
-const TOTAL_WEEK_COLS = 6
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 
 function parseSheetData(text) {
   const json = text.replace(/^[^(]+\(/, '').replace(/\);?$/, '')
@@ -50,31 +50,77 @@ function parseSheetData(text) {
       if (col === 'start' || col === 'end') obj[col] = cell?.f || cell?.v || null
     })
     return obj
-  }).filter(r => r.week)
+  }).filter(r => r.week && r.start)
 }
 
-// Pad weeks array: filled weeks + empty placeholders
-function padWeeks(filledWeeks) {
-  const result = [...filledWeeks]
-  const lastFilled = filledWeeks[filledWeeks.length - 1]
+// Get month (0-11) and year from a week's start date
+const getMonthYear = (week) => {
+  if (!week.start) return { month: -1, year: -1 }
+  const d = new Date(week.start)
+  return { month: d.getMonth(), year: d.getFullYear() }
+}
+
+// Filter weeks by month
+const filterByMonth = (weeks, month, year) => {
+  return weeks.filter(w => {
+    const my = getMonthYear(w)
+    return my.month === month && my.year === year
+  })
+}
+
+// Filter weeks by quarter
+const filterByQuarter = (weeks, quarter, year) => {
+  const startMonth = quarter * 3
+  return weeks.filter(w => {
+    const my = getMonthYear(w)
+    return my.year === year && my.month >= startMonth && my.month < startMonth + 3
+  })
+}
+
+// Aggregate weeks into monthly data for quarter view
+const aggregateToMonths = (weeks, quarter, year) => {
+  const startMonth = quarter * 3
+  const monthlyData = []
   
-  while (result.length < TOTAL_WEEK_COLS) {
-    // Generate next week label
-    const prev = result[result.length - 1]
-    let nextStart = null
-    if (prev?.start) {
-      const d = new Date(prev.start)
-      d.setDate(d.getDate() + 7)
-      nextStart = d.toISOString().split('T')[0]
-    }
-    result.push({
-      week: `empty-${result.length}`,
-      start: nextStart,
-      end: null,
-      empty: true,
+  for (let m = startMonth; m < startMonth + 3; m++) {
+    const monthWeeks = weeks.filter(w => {
+      const my = getMonthYear(w)
+      return my.month === m && my.year === year
     })
+    
+    if (monthWeeks.length === 0) {
+      monthlyData.push({ label: MONTHS[m], empty: true })
+    } else {
+      const agg = { label: MONTHS[m], empty: false }
+      Object.keys(METRICS).forEach(key => {
+        const m = METRICS[key]
+        const vals = monthWeeks.map(w => w[key]).filter(v => v !== null && v !== undefined)
+        if (vals.length === 0) {
+          agg[key] = null
+        } else if (m.agg === 'sum') {
+          agg[key] = vals.reduce((a, b) => a + b, 0)
+        } else if (m.agg === 'avg') {
+          agg[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+        } else if (m.agg === 'last') {
+          agg[key] = vals[vals.length - 1]
+        }
+      })
+      // Check if this month is current (in progress)
+      const today = new Date()
+      agg.isCurrent = today.getMonth() === m && today.getFullYear() === year
+      monthlyData.push(agg)
+    }
   }
-  return result
+  return monthlyData
+}
+
+// Pad weeks to always have 4 columns
+const padToFour = (items, startDate) => {
+  const result = [...items]
+  while (result.length < 4) {
+    result.push({ label: `W${result.length + 1}`, empty: true })
+  }
+  return result.slice(0, 4)
 }
 
 const getStatus = (value, key) => {
@@ -102,10 +148,6 @@ const fmt = (val, key) => {
   return String(val)
 }
 
-const weekLabel = (row, idx) => {
-  return `W${idx + 1}`
-}
-
 const StatusDot = ({ status }) => <span className={`status-dot status-${status}`} />
 
 const Avatar = ({ person }) => (
@@ -120,9 +162,10 @@ const Avatar = ({ person }) => (
   </div>
 )
 
-const MetricRow = ({ metricKey, weeks, currentWeekIdx }) => {
+const MetricRow = ({ metricKey, columns, view }) => {
   const m = METRICS[metricKey]
   if (!m) return null
+  
   return (
     <div className="metric-row">
       <div className="metric-label">
@@ -130,20 +173,19 @@ const MetricRow = ({ metricKey, weeks, currentWeekIdx }) => {
         <span className="metric-name">{m.name}</span>
       </div>
       <div className="metric-values">
-        {weeks.map((w, i) => {
-          if (w.empty) {
+        {columns.map((col, i) => {
+          if (col.empty) {
             return (
-              <div key={w.week} className="metric-cell empty-cell">
+              <div key={col.label || i} className="metric-cell empty-cell">
                 <span className="metric-value status-text-neutral">—</span>
               </div>
             )
           }
-          const val = w[metricKey]
-          const isCurrent = i === currentWeekIdx
-          // Current week = gray (not judged yet), past weeks = colored
+          const val = col[metricKey]
+          const isCurrent = col.isCurrent
           const status = isCurrent ? 'current' : getStatus(val, metricKey)
           return (
-            <div key={w.week} className={`metric-cell ${isCurrent ? 'current-week' : ''}`}>
+            <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''}`}>
               {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value status-text-${status}`}>{fmt(val, metricKey)}</span>
             </div>
@@ -154,26 +196,7 @@ const MetricRow = ({ metricKey, weeks, currentWeekIdx }) => {
   )
 }
 
-// Find the current (in-progress) week index
-const getCurrentWeekIdx = (weeks) => {
-  const today = new Date()
-  const filledWeeks = weeks.filter(w => !w.empty)
-  if (filledWeeks.length === 0) return -1
-  
-  // Check if last filled week contains today or is in the future
-  const lastFilled = filledWeeks[filledWeeks.length - 1]
-  if (lastFilled.end) {
-    const endDate = new Date(lastFilled.end)
-    endDate.setHours(23, 59, 59)
-    if (today <= endDate) {
-      // Find this week's index in the full array
-      return weeks.findIndex(w => w.week === lastFilled.week)
-    }
-  }
-  return -1 // All weeks are finalized
-}
-
-const DeptCard = ({ dept, weeks, currentWeekIdx }) => (
+const DeptCard = ({ dept, columns, view }) => (
   <div className="dept-card" style={{ '--accent': dept.color }}>
     <div className="dept-header">
       <span className="dept-icon">{dept.icon}</span>
@@ -185,32 +208,25 @@ const DeptCard = ({ dept, weeks, currentWeekIdx }) => (
     <div className="time-headers">
       <div className="time-label-spacer"></div>
       <div className="time-labels">
-        {weeks.map((w, i) => (
-          <div key={w.week} className={`time-label ${w.empty ? 'empty' : ''}`}>
-            {weekLabel(w, i)}
+        {columns.map((col, i) => (
+          <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''}`}>
+            {view === 'month' ? `W${i + 1}` : col.label}
           </div>
         ))}
       </div>
     </div>
     <div className="dept-metrics">
-      {dept.metrics.map(k => <MetricRow key={k} metricKey={k} weeks={weeks} currentWeekIdx={currentWeekIdx} />)}
+      {dept.metrics.map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
     </div>
   </div>
 )
 
-const HealthSummary = ({ weeks }) => {
+const HealthSummary = ({ columns }) => {
   let g = 0, y = 0, r = 0
-  const filledWeeks = weeks.filter(w => !w.empty)
-  const currentIdx = getCurrentWeekIdx(weeks)
+  const finalized = columns.filter(c => !c.empty && !c.isCurrent)
   
-  // Only count metrics from the last FINALIZED week (not current)
-  const finalizedWeeks = filledWeeks.filter((w, i) => {
-    const actualIdx = weeks.findIndex(wk => wk.week === w.week)
-    return actualIdx !== currentIdx
-  })
-  
-  if (finalizedWeeks.length > 0) {
-    const latest = finalizedWeeks[finalizedWeeks.length - 1]
+  if (finalized.length > 0) {
+    const latest = finalized[finalized.length - 1]
     DEPARTMENTS.flatMap(d => d.metrics).forEach(k => {
       const s = getStatus(latest[k], k)
       if (s === 'green') g++; else if (s === 'yellow') y++; else if (s === 'red') r++
@@ -225,18 +241,55 @@ const HealthSummary = ({ weeks }) => {
   )
 }
 
+const ViewToggle = ({ view, setView }) => (
+  <div className="view-toggle">
+    <button className={`toggle-btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
+    <button className={`toggle-btn ${view === 'quarter' ? 'active' : ''}`} onClick={() => setView('quarter')}>Quarter</button>
+  </div>
+)
+
+const PeriodSelector = ({ view, month, setMonth, quarter, setQuarter, year, setYear, availableYears }) => {
+  if (view === 'month') {
+    return (
+      <div className="period-selector">
+        <select value={month} onChange={e => setMonth(Number(e.target.value))} className="period-select">
+          {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+        </select>
+        <select value={year} onChange={e => setYear(Number(e.target.value))} className="period-select">
+          {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+    )
+  }
+  return (
+    <div className="period-selector">
+      <select value={quarter} onChange={e => setQuarter(Number(e.target.value))} className="period-select">
+        {QUARTERS.map((q, i) => <option key={q} value={i}>{q}</option>)}
+      </select>
+      <select value={year} onChange={e => setYear(Number(e.target.value))} className="period-select">
+        {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+      </select>
+    </div>
+  )
+}
+
 function App() {
-  const [weeks, setWeeks] = useState([])
+  const [allWeeks, setAllWeeks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [view, setView] = useState('month') // 'month' or 'quarter'
+  
+  const today = new Date()
+  const [month, setMonth] = useState(today.getMonth())
+  const [quarter, setQuarter] = useState(Math.floor(today.getMonth() / 3))
+  const [year, setYear] = useState(today.getFullYear())
 
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch(SHEET_URL)
         const text = await res.text()
-        const filled = parseSheetData(text)
-        setWeeks(padWeeks(filled))
+        setAllWeeks(parseSheetData(text))
         setLoading(false)
       } catch (e) {
         setError(e.message)
@@ -248,10 +301,33 @@ function App() {
     return () => clearInterval(iv)
   }, [])
 
-  const filledWeeks = weeks.filter(w => !w.empty)
-  const period = filledWeeks.length > 0 && filledWeeks[filledWeeks.length-1].start
-    ? new Date(filledWeeks[filledWeeks.length-1].start).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : '...'
+  // Get available years from data
+  const availableYears = useMemo(() => {
+    const years = new Set(allWeeks.map(w => getMonthYear(w).year).filter(y => y > 0))
+    if (years.size === 0) years.add(today.getFullYear())
+    return Array.from(years).sort()
+  }, [allWeeks])
+
+  // Compute columns based on view
+  const columns = useMemo(() => {
+    if (view === 'month') {
+      const filtered = filterByMonth(allWeeks, month, year)
+      // Mark current week
+      const withCurrent = filtered.map((w, i) => {
+        const endDate = w.end ? new Date(w.end) : null
+        if (endDate) endDate.setHours(23, 59, 59)
+        const isCurrent = endDate && today <= endDate
+        return { ...w, label: `W${i + 1}`, isCurrent }
+      })
+      return padToFour(withCurrent)
+    } else {
+      return aggregateToMonths(allWeeks, quarter, year)
+    }
+  }, [allWeeks, view, month, quarter, year])
+
+  const periodLabel = view === 'month' 
+    ? `${MONTHS[month]} ${year}`
+    : `${QUARTERS[quarter]} ${year}`
 
   if (loading) return (
     <div className="app loading-screen">
@@ -275,15 +351,23 @@ function App() {
             <span className="title-accent">ADITOR</span>
             <span className="title-text">Scorecard</span>
           </h1>
-          <p className="subtitle">{period} · 10x output, same team</p>
+          <p className="subtitle">{periodLabel} · 10x output, same team</p>
         </div>
         <div className="header-right">
-          <HealthSummary weeks={weeks} />
+          <PeriodSelector 
+            view={view} 
+            month={month} setMonth={setMonth}
+            quarter={quarter} setQuarter={setQuarter}
+            year={year} setYear={setYear}
+            availableYears={availableYears}
+          />
+          <ViewToggle view={view} setView={setView} />
+          <HealthSummary columns={columns} />
         </div>
       </header>
 
       <main className="cards-grid">
-        {DEPARTMENTS.map(d => <DeptCard key={d.id} dept={d} weeks={weeks} currentWeekIdx={getCurrentWeekIdx(weeks)} />)}
+        {DEPARTMENTS.map(d => <DeptCard key={d.id} dept={d} columns={columns} view={view} />)}
       </main>
 
       <footer className="footer">
