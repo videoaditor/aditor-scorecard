@@ -348,6 +348,12 @@ body {
 .status-text-yellow { color: var(--yellow); }
 .status-text-red { color: var(--red); }
 .status-text-neutral { color: var(--text-muted); }
+.status-text-current { color: var(--text-dim); }
+
+/* Current week styling */
+.metric-cell.current-week {
+  opacity: 0.7;
+}
 
 .metric-value {
   font-family: 'JetBrains Mono', monospace;

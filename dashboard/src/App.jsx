@@ -126,7 +126,7 @@ const Avatar = ({ person }) => (
   </div>
 )
 
-const MetricRow = ({ metricKey, weeks }) => {
+const MetricRow = ({ metricKey, weeks, currentWeekIdx }) => {
   const m = METRICS[metricKey]
   if (!m) return null
   return (
@@ -145,10 +145,12 @@ const MetricRow = ({ metricKey, weeks }) => {
             )
           }
           const val = w[metricKey]
-          const status = getStatus(val, metricKey)
+          const isCurrent = i === currentWeekIdx
+          // Current week = gray (not judged yet), past weeks = colored
+          const status = isCurrent ? 'current' : getStatus(val, metricKey)
           return (
-            <div key={w.week} className={`metric-cell`}>
-              <StatusDot status={status} />
+            <div key={w.week} className={`metric-cell ${isCurrent ? 'current-week' : ''}`}>
+              {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value status-text-${status}`}>{fmt(val, metricKey)}</span>
             </div>
           )
@@ -158,7 +160,26 @@ const MetricRow = ({ metricKey, weeks }) => {
   )
 }
 
-const DeptCard = ({ dept, weeks }) => (
+// Find the current (in-progress) week index
+const getCurrentWeekIdx = (weeks) => {
+  const today = new Date()
+  const filledWeeks = weeks.filter(w => !w.empty)
+  if (filledWeeks.length === 0) return -1
+  
+  // Check if last filled week contains today or is in the future
+  const lastFilled = filledWeeks[filledWeeks.length - 1]
+  if (lastFilled.end) {
+    const endDate = new Date(lastFilled.end)
+    endDate.setHours(23, 59, 59)
+    if (today <= endDate) {
+      // Find this week's index in the full array
+      return weeks.findIndex(w => w.week === lastFilled.week)
+    }
+  }
+  return -1 // All weeks are finalized
+}
+
+const DeptCard = ({ dept, weeks, currentWeekIdx }) => (
   <div className="dept-card" style={{ '--accent': dept.color }}>
     <div className="dept-header">
       <span className="dept-icon">{dept.icon}</span>
@@ -178,7 +199,7 @@ const DeptCard = ({ dept, weeks }) => (
       </div>
     </div>
     <div className="dept-metrics">
-      {dept.metrics.map(k => <MetricRow key={k} metricKey={k} weeks={weeks} />)}
+      {dept.metrics.map(k => <MetricRow key={k} metricKey={k} weeks={weeks} currentWeekIdx={currentWeekIdx} />)}
     </div>
   </div>
 )
@@ -186,8 +207,16 @@ const DeptCard = ({ dept, weeks }) => (
 const HealthSummary = ({ weeks }) => {
   let g = 0, y = 0, r = 0
   const filledWeeks = weeks.filter(w => !w.empty)
-  if (filledWeeks.length > 0) {
-    const latest = filledWeeks[filledWeeks.length - 1]
+  const currentIdx = getCurrentWeekIdx(weeks)
+  
+  // Only count metrics from the last FINALIZED week (not current)
+  const finalizedWeeks = filledWeeks.filter((w, i) => {
+    const actualIdx = weeks.findIndex(wk => wk.week === w.week)
+    return actualIdx !== currentIdx
+  })
+  
+  if (finalizedWeeks.length > 0) {
+    const latest = finalizedWeeks[finalizedWeeks.length - 1]
     DEPARTMENTS.flatMap(d => d.metrics).forEach(k => {
       const s = getStatus(latest[k], k)
       if (s === 'green') g++; else if (s === 'yellow') y++; else if (s === 'red') r++
@@ -260,7 +289,7 @@ function App() {
       </header>
 
       <main className="cards-grid">
-        {DEPARTMENTS.map(d => <DeptCard key={d.id} dept={d} weeks={weeks} />)}
+        {DEPARTMENTS.map(d => <DeptCard key={d.id} dept={d} weeks={weeks} currentWeekIdx={getCurrentWeekIdx(weeks)} />)}
       </main>
 
       <footer className="footer">
