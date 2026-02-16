@@ -28,7 +28,7 @@ const METRICS = {
 
 const DRI = {
   marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
-  sales:     [{ name: 'Shawn', initials: 'SH', color: '#EC4899', img: './avatars/shawn.jpg' }, { name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
+  sales:     [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
   cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }, { name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
   people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
 }
