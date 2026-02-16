@@ -202,6 +202,129 @@ body {
   }
 }
 
+/* Mobile */
+@media (max-width: 600px) {
+  .app {
+    padding: 16px 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .period-selector {
+    flex: 1;
+  }
+
+  .period-select {
+    flex: 1;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .toggle-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .health-summary {
+    gap: 6px;
+  }
+
+  .health-item {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .dept-card {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .dept-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .dept-name {
+    font-size: 14px;
+  }
+
+  .dri-name {
+    display: none;
+  }
+
+  /* Make metric rows scroll horizontally */
+  .metric-row {
+    padding: 8px;
+  }
+
+  .metric-label {
+    min-width: 100px;
+    gap: 6px;
+  }
+
+  .metric-name {
+    font-size: 11px;
+  }
+
+  .metric-icon {
+    font-size: 12px;
+  }
+
+  .metric-values {
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .metric-cell {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .metric-value {
+    font-size: 12px;
+  }
+
+  .time-label-spacer {
+    min-width: 100px;
+  }
+
+  .time-label {
+    width: 60px;
+    min-width: 60px;
+    font-size: 9px;
+  }
+
+  .time-labels {
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .footer {
+    margin-top: 24px;
+    font-size: 11px;
+  }
+
+  .cards-grid {
+    gap: 16px;
+  }
+}
+
 /* Department Card */
 .dept-card {
   background: var(--surface);

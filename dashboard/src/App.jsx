@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 
 const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:S100`
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:U100`
 
-const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','followers']
+const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall']
 
 const METRICS = {
   cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
   calls:          { name: 'Sales Calls',       icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
-  posts:          { name: 'Social Posts',      icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
+  posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
   mrrDelta:       { name: 'MRR Δ',              icon: '📈', unit: '€±', dir: 'higher', green: 3000, yellow: 1, agg: 'sum', weekOnly: true },
   mrr:            { name: 'MRR',               icon: '💰', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', quarterOnly: true },
@@ -17,25 +17,27 @@ const METRICS = {
   cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
   delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
-  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'sum' },
-  testCuts:       { name: 'Test Cuts',         icon: '🎬', unit: '',   dir: 'higher', green: 5,   yellow: 2, agg: 'sum' },
-  testPassed:     { name: 'Tests Passed',      icon: '✅', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum' },
+  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum' },
+  testCutRate:    { name: 'Test Cut Rate',     icon: '🎬', unit: '%',  dir: 'higher', green: 15,  yellow: 5, agg: 'avg' },
+  clearanceRate:  { name: 'Clearance Rate',    icon: '✅', unit: '%',  dir: 'higher', green: 50,  yellow: 25, agg: 'avg' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
-  followers:      { name: 'Follower Growth',  icon: '📊', unit: '±',  dir: 'higher', green: 100, yellow: 50, agg: 'sum' },
+  followers:      { name: 'Follower Growth',  icon: '📊', unit: '±',  dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
+  callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg' },
+  costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg' },
 }
 
 const DRI = {
   marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
   sales:     [{ name: 'Shawn', initials: 'SH', color: '#EC4899', img: './avatars/shawn.jpg' }, { name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
-  cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }],
+  cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }, { name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
   people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
 }
 
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
-  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['closeRate', 'mrrDelta', 'mrr', 'margin'] },
+  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
   { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins'] },
-  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCuts', 'testPassed', 'goodEditors'] },
+  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -52,7 +54,18 @@ function parseSheetData(text) {
       if (col === 'start' || col === 'end') obj[col] = cell?.f || cell?.v || null
     })
     return obj
-  }).filter(r => r.week && r.start)
+  }).filter(r => r.week && r.start).map((r, i, arr) => {
+    // Computed metrics
+    // Test Cut Rate = testCuts / applicants * 100
+    if (r.testCuts != null && r.applicants != null && r.applicants > 0) {
+      r.testCutRate = Math.round(r.testCuts / r.applicants * 1000) / 10
+    }
+    // Clearance Rate = testPassed / prev week's testCuts * 100
+    if (r.testPassed != null && i > 0 && arr[i-1].testCuts != null && arr[i-1].testCuts > 0) {
+      r.clearanceRate = Math.round(r.testPassed / arr[i-1].testCuts * 1000) / 10
+    }
+    return r
+  })
 }
 
 // Get month (0-11) and year from a week's start date
