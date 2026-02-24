@@ -4,12 +4,31 @@ const getMetricState = (score) => {
   return 'burning'
 }
 
-function CastleDetail({ brand, metrics, onClose }) {
-  const { cadence, queue, active, health } = metrics
+const METRIC_CONFIG = [
+  { key: 'deliveryVsTarget', name: 'Delivery vs Target', icon: '📦' },
+  { key: 'deliveryRhythm', name: 'Delivery Rhythm', icon: '🎵' },
+  { key: 'queueDepth', name: 'NextUp Queue', icon: '📋' },
+  { key: 'activeWork', name: 'Active Work', icon: '⚡' },
+  { key: 'sentiment', name: 'Sentiment', icon: '💬' },
+  { key: 'freshness', name: 'Freshness', icon: '🕐' },
+]
 
-  const cadenceState = getMetricState(cadence.score)
-  const queueState = getMetricState(queue.score)
-  const activeState = getMetricState(active.score)
+function CastleDetail({ brand, onClose }) {
+  const { metrics, health, recentActivity, weeklyTarget, state } = brand
+
+  if (!metrics || Object.keys(metrics).length === 0) {
+    return (
+      <div className="castle-detail">
+        <div className="detail-header">
+          <div className="detail-title">
+            <div className="detail-brand-name">{brand.name}</div>
+            <div className="detail-health">Error loading metrics</div>
+          </div>
+          <button className="detail-close" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="castle-detail">
@@ -17,91 +36,60 @@ function CastleDetail({ brand, metrics, onClose }) {
         <div className="detail-title">
           <div className="detail-brand-name">{brand.name}</div>
           <div className="detail-health">
-            Overall Health: <strong>{Math.round(health)}%</strong>
+            Health: <strong className={`health-${state}`}>{health}%</strong>
+            <span className="detail-target"> · {weeklyTarget}/wk target</span>
           </div>
         </div>
-        <button className="detail-close" onClick={onClose}>
-          Close
-        </button>
+        <button className="detail-close" onClick={onClose}>Close</button>
       </div>
 
       <div className="detail-metrics">
-        {/* Card Cadence */}
-        <div className={`metric-item ${cadenceState}`}>
-          <div className="metric-item-header">
-            <div className="metric-item-name">Card Cadence</div>
-          </div>
-          <div className="metric-item-value">
-            {cadence.current} / {brand.weeklyTarget}
-          </div>
-          <div className="metric-progress-bar">
-            <div
-              className="metric-progress-fill"
-              style={{ width: `${Math.min(cadence.score, 100)}%` }}
-            />
-          </div>
-          <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-            Cards moved this week
-          </div>
-        </div>
+        {METRIC_CONFIG.map(({ key, name, icon }) => {
+          const m = metrics[key]
+          if (!m) return null
+          const mState = getMetricState(m.score)
 
-        {/* NextUp Queue */}
-        <div className={`metric-item ${queueState}`}>
-          <div className="metric-item-header">
-            <div className="metric-item-name">NextUp Queue</div>
-          </div>
-          <div className="metric-item-value">{queue.current}</div>
-          <div className="metric-progress-bar">
-            <div
-              className="metric-progress-fill"
-              style={{ width: `${Math.min(queue.score, 100)}%` }}
-            />
-          </div>
-          <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-            Scripts ready to go
-          </div>
-        </div>
-
-        {/* Active Work */}
-        <div className={`metric-item ${activeState}`}>
-          <div className="metric-item-header">
-            <div className="metric-item-name">Active Work</div>
-          </div>
-          <div className="metric-item-value">{active.current}</div>
-          <div className="metric-progress-bar">
-            <div
-              className="metric-progress-fill"
-              style={{ width: `${Math.min(active.score, 100)}%` }}
-            />
-          </div>
-          <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
-            Cards being worked now
-          </div>
-        </div>
+          return (
+            <div key={key} className={`metric-item ${mState}`}>
+              <div className="metric-item-header">
+                <div className="metric-item-name">{icon} {name}</div>
+                <div className="metric-weight">{m.weight}</div>
+              </div>
+              <div className="metric-item-value">{m.score}%</div>
+              <div className="metric-progress-bar">
+                <div
+                  className="metric-progress-fill"
+                  style={{ width: `${Math.min(m.score, 100)}%` }}
+                />
+              </div>
+              <div className="metric-label">{m.label}</div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Recent Activity */}
-      {metrics.recentActivity && metrics.recentActivity.length > 0 && (
+      {recentActivity && recentActivity.length > 0 && (
         <div className="detail-activity">
           <div className="activity-header">Recent Activity</div>
           <div className="activity-list">
-            {metrics.recentActivity.map((activity, i) => (
+            {recentActivity.map((a, i) => (
               <div key={i} className="activity-item">
-                {activity}
+                <span className="activity-card">{a.card}</span>
+                <span className="activity-arrow">{a.from} → {a.to}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {(!metrics.recentActivity || metrics.recentActivity.length === 0) && (
+      {(!recentActivity || recentActivity.length === 0) && (
         <div className="detail-activity">
           <div className="activity-header">Recent Activity</div>
           <div className="activity-empty">No recent card movements</div>
         </div>
       )}
 
-      {/* Trello Link */}
       <a
         href={`https://trello.com/b/${brand.boardId}`}
         target="_blank"
