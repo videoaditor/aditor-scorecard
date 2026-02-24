@@ -13,28 +13,28 @@
 /* Castle Grid */
 .castle-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
   margin-top: 32px;
 }
 
 @media (max-width: 1200px) {
   .castle-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
 @media (max-width: 900px) {
   .castle-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 16px;
   }
 }
 
 @media (max-width: 600px) {
   .castle-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 12px;
   }
 
   .castle-grid-container {
@@ -61,9 +61,9 @@
 
 .castle-image-wrapper {
   position: relative;
-  width: 140px;
-  height: 140px;
-  margin-bottom: 12px;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 8px;
 }
 
 .castle-image {
@@ -97,6 +97,36 @@
 @keyframes glow-pulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+/* Building - under construction wobble */
+.castle-card.building .castle-image-wrapper {
+  animation: building-bob 2s ease-in-out infinite;
+}
+
+.castle-card.building .castle-image-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.25) 0%, transparent 60%);
+  z-index: -1;
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes building-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.castle-card.building .castle-name {
+  color: #fbbf24;
+}
+
+.castle-card.building .health-badge {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  font-size: 12px;
 }
 
 /* Neutral - slightly desaturated */
@@ -222,8 +252,8 @@
 }
 
 .castle-skeleton {
-  width: 140px;
-  height: 140px;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(90deg,
     rgba(255, 255, 255, 0.05) 0%,
     rgba(255, 255, 255, 0.1) 50%,

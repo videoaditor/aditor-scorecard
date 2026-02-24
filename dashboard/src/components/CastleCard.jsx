@@ -1,13 +1,9 @@
-import { useState } from 'react'
-
-const getCastleState = (health) => {
+const getCastleState = (health, brand) => {
+  // New brands / trial week = building state
+  if (brand.isBuilding) return 'building'
   if (health >= 70) return 'thriving'
   if (health >= 30) return 'neutral'
   return 'burning'
-}
-
-const getCastleImage = (state) => {
-  return `/castles/castle-${state}.png`
 }
 
 function CastleCard({ brand, health, onClick, loading, error }) {
@@ -35,15 +31,16 @@ function CastleCard({ brand, health, onClick, loading, error }) {
     )
   }
 
-  const state = getCastleState(health)
-  const imageUrl = getCastleImage(state)
+  const state = getCastleState(health, brand)
 
   return (
     <div className={`castle-card ${state}`} onClick={onClick}>
-      <div className="health-badge">{Math.round(health)}%</div>
+      <div className="health-badge">
+        {state === 'building' ? '🔨' : `${Math.round(health)}%`}
+      </div>
       <div className="castle-image-wrapper">
         <img
-          src={imageUrl}
+          src={`/castles/castle-${state}.png`}
           alt={`${brand.name} castle - ${state}`}
           className="castle-image"
         />
