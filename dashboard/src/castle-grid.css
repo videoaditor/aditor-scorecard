@@ -1,0 +1,474 @@
+/* Castle Grid - RPG Brand Health View */
+
+.castle-grid-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 60px;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(34, 139, 34, 0.03) 0%, transparent 50%),
+    var(--bg);
+}
+
+/* Castle Grid */
+.castle-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 32px;
+  margin-top: 32px;
+}
+
+@media (max-width: 1200px) {
+  .castle-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .castle-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .castle-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .castle-grid-container {
+    padding: 24px 16px;
+  }
+}
+
+/* Castle Card */
+.castle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  padding: 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.castle-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.castle-image-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 12px;
+}
+
+.castle-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Castle States */
+
+/* Thriving - green glow and subtle pulse */
+.castle-card.thriving .castle-image-wrapper {
+  animation: thriving-pulse 3s ease-in-out infinite;
+}
+
+.castle-card.thriving .castle-image-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, transparent 60%);
+  z-index: -1;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes thriving-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Neutral - slightly desaturated */
+.castle-card.neutral .castle-image {
+  filter: grayscale(0.2) brightness(0.85) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  opacity: 0.9;
+}
+
+/* Burning - red glow, flames, and shake */
+.castle-card.burning .castle-image-wrapper {
+  animation: burning-shake 0.3s ease-in-out infinite;
+}
+
+.castle-card.burning .castle-image-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, rgba(255, 140, 0, 0.3) 40%, transparent 70%);
+  z-index: -1;
+  animation: fire-pulse 1s ease-in-out infinite;
+}
+
+.castle-card.burning .castle-image-wrapper::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 60px;
+  background: linear-gradient(180deg,
+    rgba(255, 100, 0, 0.6) 0%,
+    rgba(255, 50, 0, 0.4) 30%,
+    rgba(255, 0, 0, 0.2) 60%,
+    transparent 100%
+  );
+  filter: blur(8px);
+  animation: flame-flicker 0.8s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes burning-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-0.5deg); }
+  75% { transform: translateX(2px) rotate(0.5deg); }
+}
+
+@keyframes fire-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes flame-flicker {
+  0%, 100% {
+    opacity: 0.8;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1.15);
+  }
+}
+
+/* Castle Name */
+.castle-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.4;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  word-break: break-word;
+  max-width: 160px;
+}
+
+.castle-card.thriving .castle-name {
+  color: var(--green);
+}
+
+.castle-card.burning .castle-name {
+  color: var(--red);
+}
+
+/* Health Badge */
+.health-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.castle-card.thriving .health-badge {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.castle-card.neutral .health-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+
+.castle-card.burning .health-badge {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Loading State */
+.castle-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+}
+
+.castle-skeleton {
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Castle Detail Panel */
+.castle-detail {
+  margin-top: 32px;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-brand-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.detail-health {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.detail-close {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.detail-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Metrics Section */
+.detail-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .detail-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-item {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.metric-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.metric-item-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-item-value {
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-item.thriving .metric-item-value {
+  color: var(--green);
+}
+
+.metric-item.neutral .metric-item-value {
+  color: var(--text-dim);
+}
+
+.metric-item.burning .metric-item-value {
+  color: var(--red);
+}
+
+.metric-progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.metric-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.metric-item.thriving .metric-progress-fill {
+  background: linear-gradient(90deg, var(--green) 0%, #4ade80 100%);
+}
+
+.metric-item.neutral .metric-progress-fill {
+  background: linear-gradient(90deg, var(--text-muted) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+
+.metric-item.burning .metric-progress-fill {
+  background: linear-gradient(90deg, var(--red) 0%, #ff6b6b 100%);
+}
+
+/* Recent Activity */
+.detail-activity {
+  margin-top: 32px;
+}
+
+.activity-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.activity-item::before {
+  content: '→';
+  color: var(--purple);
+  font-weight: 600;
+}
+
+.activity-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Trello Link */
+.detail-trello-link {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  color: var(--purple);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.detail-trello-link:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.25) 100%);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Error State */
+.castle-error {
+  position: relative;
+}
+
+.castle-error .castle-image {
+  filter: grayscale(1) brightness(0.5);
+  opacity: 0.5;
+}
+
+.castle-error::after {
+  content: '?';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}

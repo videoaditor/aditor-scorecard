@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
+import CastleGrid from './components/CastleGrid'
 
 const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:V100`
 
-const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers']
+const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers','acquisitionRate']
 
 const METRICS = {
   cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
@@ -24,6 +25,7 @@ const METRICS = {
   followers:      { name: 'Follower Growth',  icon: '📊', unit: '±',  dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg' },
+  acquisitionRate:{ name: 'Acquisition Rate',  icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
 }
 
 const DRI = {
@@ -36,7 +38,7 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
   { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins'] },
+  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors'] },
 ]
 
@@ -336,6 +338,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [view, setView] = useState('month') // 'month' or 'quarter'
+  const [activeTab, setActiveTab] = useState('scorecard') // 'scorecard' or 'kingdom'
   
   const today = new Date()
   const [month, setMonth] = useState(today.getMonth())
@@ -398,9 +401,32 @@ function App() {
     }
   }, [allWeeks, view, month, quarter, year])
 
-  const periodLabel = view === 'month' 
+  const periodLabel = view === 'month'
     ? `${MONTHS[month]} ${year}`
     : `${QUARTERS[quarter]} ${year}`
+
+  // Kingdom tab doesn't need loading
+  if (activeTab === 'kingdom') {
+    return (
+      <div className="app">
+        <div className="tab-navigation">
+          <button
+            className={`tab-btn ${activeTab === 'scorecard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('scorecard')}
+          >
+            Scorecard
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
+            onClick={() => setActiveTab('kingdom')}
+          >
+            Kingdom
+          </button>
+        </div>
+        <CastleGrid />
+      </div>
+    )
+  }
 
   if (loading) return (
     <div className="app loading-screen">
@@ -418,6 +444,21 @@ function App() {
 
   return (
     <div className="app">
+      <div className="tab-navigation">
+        <button
+          className={`tab-btn ${activeTab === 'scorecard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('scorecard')}
+        >
+          Scorecard
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
+          onClick={() => setActiveTab('kingdom')}
+        >
+          Kingdom
+        </button>
+      </div>
+
       <header className="header">
         <div className="header-left">
           <h1 className="title">
