@@ -1,11 +1,3 @@
-const getCastleState = (health, brand) => {
-  // New brands / trial week = building state
-  if (brand.isBuilding) return 'building'
-  if (health >= 70) return 'thriving'
-  if (health >= 30) return 'neutral'
-  return 'burning'
-}
-
 function CastleCard({ brand, health, onClick, loading, error }) {
   if (loading) {
     return (
@@ -31,7 +23,8 @@ function CastleCard({ brand, health, onClick, loading, error }) {
     )
   }
 
-  const state = getCastleState(health, brand)
+  // Use API-provided state, fallback to 'building' if isBuilding flag is set
+  const state = brand.isBuilding ? 'building' : brand.state
 
   return (
     <div className={`castle-card ${state}`} onClick={onClick}>

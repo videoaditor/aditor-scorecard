@@ -17,7 +17,16 @@ function CastleGrid() {
       const res = await fetch(url)
       if (!res.ok) throw new Error('API error')
       const data = await res.json()
-      setBrands(data.brands || [])
+
+      // Sort brands: burning first, then neutral, then thriving (worst-first)
+      const sortedBrands = (data.brands || []).sort((a, b) => {
+        const stateOrder = { burning: 0, neutral: 1, thriving: 2 }
+        const stateA = a.isBuilding ? 'neutral' : a.state
+        const stateB = b.isBuilding ? 'neutral' : b.state
+        return stateOrder[stateA] - stateOrder[stateB]
+      })
+
+      setBrands(sortedBrands)
       setCacheInfo({
         cached: data.cached,
         cacheAge: data.cacheAge,
@@ -80,6 +89,14 @@ function CastleGrid() {
             </div>
           ))
         )}
+      </div>
+
+      <div className="castle-legend">
+        <span className="legend-item">🔥 &lt;30%</span>
+        <span className="legend-separator">|</span>
+        <span className="legend-item">🏰 30-69%</span>
+        <span className="legend-separator">|</span>
+        <span className="legend-item">✨ ≥70%</span>
       </div>
 
       {selectedBrand && (

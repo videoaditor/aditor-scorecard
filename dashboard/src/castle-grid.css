@@ -10,6 +10,28 @@
     var(--bg);
 }
 
+/* Castle Legend */
+.castle-legend {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-separator {
+  color: var(--border);
+}
+
 .castle-grid-header {
   display: flex;
   align-items: center;
