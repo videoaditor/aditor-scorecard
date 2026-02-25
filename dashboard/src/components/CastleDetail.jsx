@@ -13,7 +13,7 @@ const METRIC_CONFIG = [
   { key: 'freshness', name: 'Freshness', icon: '🕐' },
 ]
 
-function CastleDetail({ brand, onClose }) {
+function CastleDetail({ brand, onClose, editors = [] }) {
   const { metrics, health, recentActivity, weeklyTarget, state } = brand
 
   if (!metrics || Object.keys(metrics).length === 0) {
@@ -43,6 +43,20 @@ function CastleDetail({ brand, onClose }) {
         </div>
         <button className="detail-close" onClick={onClose}>Close</button>
       </div>
+
+      {editors.length > 0 && (
+        <div className="detail-editors">
+          <div className="detail-editors-label">Assigned Editors</div>
+          <div className="detail-editors-list">
+            {editors.map((editor, i) => (
+              <div key={i} className="detail-editor-chip">
+                <img src={`/editors/editor-${editor.sprite}.png`} alt={editor.name} className="detail-editor-img" />
+                <span>{editor.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="detail-metrics">
         {METRIC_CONFIG.map(({ key, name, icon }) => {

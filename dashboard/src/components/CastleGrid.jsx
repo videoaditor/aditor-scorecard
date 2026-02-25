@@ -10,6 +10,7 @@ function CastleGrid() {
   const [loading, setLoading] = useState(true)
   const [selectedBrand, setSelectedBrand] = useState(null)
   const [cacheInfo, setCacheInfo] = useState(null)
+  const [editorMap, setEditorMap] = useState({})
 
   const fetchHealth = async (forceRefresh = false) => {
     try {
@@ -18,7 +19,6 @@ function CastleGrid() {
       if (!res.ok) throw new Error('API error')
       const data = await res.json()
 
-      // Sort brands: burning first, then neutral, then thriving (worst-first)
       const sortedBrands = (data.brands || []).sort((a, b) => {
         const stateOrder = { burning: 0, neutral: 1, thriving: 2 }
         const stateA = a.isBuilding ? 'neutral' : a.state
@@ -39,8 +39,20 @@ function CastleGrid() {
     }
   }
 
+  const fetchEditors = async () => {
+    try {
+      const res = await fetch(`${API_URL}/editors`)
+      if (!res.ok) return
+      const data = await res.json()
+      setEditorMap(data.editors || {})
+    } catch (err) {
+      console.error('Failed to fetch editors:', err)
+    }
+  }
+
   useEffect(() => {
     fetchHealth()
+    fetchEditors()
     const interval = setInterval(() => fetchHealth(), 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
@@ -56,7 +68,7 @@ function CastleGrid() {
       <div className="castle-grid-header">
         <button
           className="refresh-btn"
-          onClick={() => fetchHealth(true)}
+          onClick={() => { fetchHealth(true); fetchEditors(); }}
           title="Force refresh (bypass cache)"
         >
           ↻
@@ -79,6 +91,7 @@ function CastleGrid() {
             onClick={() => handleCastleClick(brand)}
             loading={loading}
             error={brand.error}
+            editors={editorMap[brand.name] || []}
           />
         ))}
         {loading && brands.length === 0 && (
@@ -99,12 +112,15 @@ function CastleGrid() {
         <span className="legend-item">✨ ≥70%</span>
         <span className="legend-separator">|</span>
         <span className="legend-item">💤 passive</span>
+        <span className="legend-separator">|</span>
+        <span className="legend-item">⚔️ editor assigned</span>
       </div>
 
       {selectedBrand && (
         <CastleDetail
           brand={selectedBrand}
           onClose={() => setSelectedBrand(null)}
+          editors={editorMap[selectedBrand.name] || []}
         />
       )}
     </div>

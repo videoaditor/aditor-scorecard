@@ -65,71 +65,113 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Castle Grid */
+/* Castle Grid — compact layout */
 .castle-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 20px;
-  margin-top: 32px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin-top: 24px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .castle-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .castle-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
   }
 }
 
 @media (max-width: 600px) {
   .castle-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
   .castle-grid-container {
-    padding: 24px 16px;
+    padding: 16px 12px;
   }
 }
 
-/* Castle Card */
+/* Castle Card — compact */
 .castle-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
   position: relative;
-  padding: 16px 16px 12px;
-  border-radius: 12px;
+  padding: 8px 6px 8px;
+  border-radius: 10px;
   transition: all 0.3s ease;
   overflow: visible;
-  min-height: 170px;
+  min-height: 120px;
 }
 
 .castle-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Scene wrapper — castle + editors side by side */
+.castle-scene {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-bottom: 4px;
+  margin-top: 6px;
 }
 
 .castle-image-wrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin-bottom: 8px;
-  margin-top: 12px;
+  width: 80px;
+  height: 80px;
   overflow: visible;
+  flex-shrink: 0;
 }
 
 .castle-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Editor sprites next to castle */
+.editor-sprites {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.editor-sprite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.editor-image {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.editor-label {
+  font-size: 7px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+  margin-top: 1px;
+  max-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Castle States */
@@ -252,13 +294,13 @@
 /* Castle Name */
 .castle-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 8px;
   color: var(--text);
   text-align: center;
-  line-height: 1.4;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   word-break: break-word;
-  max-width: 160px;
+  max-width: 120px;
 }
 
 .castle-card.thriving .castle-name {
@@ -272,15 +314,16 @@
 /* Health Badge */
 .health-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 10px;
+  top: 4px;
+  right: 4px;
+  padding: 2px 5px;
+  border-radius: 8px;
+  font-size: 9px;
   font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
 }
 
 .castle-card.thriving .health-badge {
@@ -326,8 +369,8 @@
 }
 
 .castle-skeleton {
-  width: 100px;
-  height: 100px;
+  width: 72px;
+  height: 72px;
   background: linear-gradient(90deg,
     rgba(255, 255, 255, 0.05) 0%,
     rgba(255, 255, 255, 0.1) 50%,
@@ -596,6 +639,46 @@
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+/* Editor Chips in Detail Panel */
+.detail-editors {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-editors-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.detail-editors-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-editor-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.detail-editor-img {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
 }
 
 /* Trello Link */
