@@ -119,6 +119,7 @@
   width: 100px;
   height: 100px;
   margin-bottom: 8px;
+  overflow: visible;
 }
 
 .castle-image {
