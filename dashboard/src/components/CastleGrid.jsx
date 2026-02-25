@@ -13,6 +13,7 @@ function CastleGrid() {
   const [cacheInfo, setCacheInfo] = useState(null)
   const [editorMap, setEditorMap] = useState({})
   const [allEditors, setAllEditors] = useState([])
+  const [brandRecordIds, setBrandRecordIds] = useState({})
   const [toast, setToast] = useState(null)
   const [draggingEditor, setDraggingEditor] = useState(null)
 
@@ -60,6 +61,7 @@ function CastleGrid() {
       const data = await res.json()
       setEditorMap(data.editors || {})
       setAllEditors(data.allEditors || [])
+      setBrandRecordIds(data.brandRecordIds || {})
     } catch (err) {
       console.error('Failed to fetch editors:', err)
     }
@@ -87,7 +89,7 @@ function CastleGrid() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          brandRecordId: brand.airtableId,
+          brandRecordId: brandRecordIds[brand.name],
           editorRecordId: editor.id,
         }),
       })
