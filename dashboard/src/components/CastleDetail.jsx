@@ -38,6 +38,7 @@ function CastleDetail({ brand, onClose }) {
           <div className="detail-health">
             Health: <strong className={`health-${state}`}>{health}%</strong>
             <span className="detail-target"> · {weeklyTarget}/wk target</span>
+            {brand.subscription === 'passive' && <span className="detail-target"> · 💤 passive (no subscription)</span>}
           </div>
         </div>
         <button className="detail-close" onClick={onClose}>Close</button>

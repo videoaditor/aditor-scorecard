@@ -97,6 +97,8 @@ function CastleGrid() {
         <span className="legend-item">🏰 30-69%</span>
         <span className="legend-separator">|</span>
         <span className="legend-item">✨ ≥70%</span>
+        <span className="legend-separator">|</span>
+        <span className="legend-item">💤 passive</span>
       </div>
 
       {selectedBrand && (

@@ -26,11 +26,14 @@ function CastleCard({ brand, health, onClick, loading, error }) {
   // Use API-provided state, fallback to 'building' if isBuilding flag is set
   const state = brand.isBuilding ? 'building' : brand.state
 
+  const isPassive = brand.subscription === 'passive'
+
   return (
-    <div className={`castle-card ${state}`} onClick={onClick}>
+    <div className={`castle-card ${state}${isPassive ? ' passive' : ''}`} onClick={onClick}>
       <div className="health-badge">
         {state === 'building' ? '🔨' : `${Math.round(health)}%`}
       </div>
+      {isPassive && <div className="passive-badge">💤</div>}
       <div className="castle-image-wrapper">
         <img
           src={`/castles/castle-${state}.png`}
