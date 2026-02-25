@@ -405,7 +405,7 @@ function App() {
     ? `${MONTHS[month]} ${year}`
     : `${QUARTERS[quarter]} ${year}`
 
-  // Kingdom tab doesn't need loading
+  // Brands tab doesn't need loading
   if (activeTab === 'kingdom') {
     return (
       <div className="app">
@@ -420,7 +420,7 @@ function App() {
             className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
             onClick={() => setActiveTab('kingdom')}
           >
-            Kingdom
+            Brands
           </button>
         </div>
         <CastleGrid />
@@ -455,7 +455,7 @@ function App() {
           className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
           onClick={() => setActiveTab('kingdom')}
         >
-          Kingdom
+          Brands
         </button>
       </div>
 
