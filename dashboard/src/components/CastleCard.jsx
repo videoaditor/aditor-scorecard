@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function CastleCard({ brand, health, onClick, loading, error, editors, onEditorDrop }) {
+function CastleCard({ brand, health, onClick, loading, error, editors, onEditorDrop, isExpanded, isDimmed }) {
   const [dragOver, setDragOver] = useState(false)
 
   const handleDragOver = (e) => {
@@ -49,7 +49,7 @@ function CastleCard({ brand, health, onClick, loading, error, editors, onEditorD
 
   return (
     <div
-      className={`castle-card ${state}${isPassive ? ' passive' : ''}${dragOver ? ' drag-over' : ''}`}
+      className={`castle-card ${state}${isPassive ? ' passive' : ''}${dragOver ? ' drag-over' : ''}${isExpanded ? ' expanded' : ''}${isDimmed ? ' dimmed' : ''}`}
       onClick={onClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
