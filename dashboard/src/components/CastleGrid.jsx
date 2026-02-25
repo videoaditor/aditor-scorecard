@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import CastleCard from './CastleCard'
 import CastleDetail from './CastleDetail'
+import EditorSection from './EditorSection'
 import '../castle-grid.css'
 
 const API_URL = 'https://gen.aditor.ai/api/brand-health'
@@ -11,6 +12,14 @@ function CastleGrid() {
   const [selectedBrand, setSelectedBrand] = useState(null)
   const [cacheInfo, setCacheInfo] = useState(null)
   const [editorMap, setEditorMap] = useState({})
+  const [allEditors, setAllEditors] = useState([])
+  const [toast, setToast] = useState(null)
+  const [draggingEditor, setDraggingEditor] = useState(null)
+
+  const showToast = (msg, type = 'info') => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   const fetchHealth = async (forceRefresh = false) => {
     try {
@@ -45,6 +54,7 @@ function CastleGrid() {
       if (!res.ok) return
       const data = await res.json()
       setEditorMap(data.editors || {})
+      setAllEditors(data.allEditors || [])
     } catch (err) {
       console.error('Failed to fetch editors:', err)
     }
@@ -63,26 +73,61 @@ function CastleGrid() {
     )
   }
 
+  const handleEditorDrop = async (editor, brand) => {
+    const confirmed = window.confirm(`Assign ${editor.name} to ${brand.name}?`)
+    if (!confirmed) return
+
+    try {
+      const res = await fetch(`${API_URL}/assign-editor`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brandRecordId: brand.airtableId,
+          editorRecordId: editor.id,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        showToast(data.error || 'Assignment failed', 'error')
+        return
+      }
+      showToast(`${editor.name} assigned to ${brand.name}!`, 'success')
+      // Refresh editor data
+      fetchEditors()
+    } catch (err) {
+      showToast('Read-only mode — contact admin to enable assignments', 'error')
+    }
+  }
+
   return (
     <div className="castle-grid-container">
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.type === 'error' ? '⚠️' : '✅'} {toast.msg}
+        </div>
+      )}
+
       <div className="castle-grid-header">
-        <button
-          className="refresh-btn"
-          onClick={() => { fetchHealth(true); fetchEditors(); }}
-          title="Force refresh (bypass cache)"
-        >
-          ↻
-        </button>
-        {cacheInfo && (
-          <span className="cache-info">
-            {cacheInfo.cached
-              ? `cached ${cacheInfo.cacheAge}s ago`
-              : `live (${cacheInfo.computeMs}ms)`}
-          </span>
-        )}
+        <div className="castle-grid-title">KINGDOMS</div>
+        <div className="castle-grid-controls">
+          <button
+            className="refresh-btn"
+            onClick={() => { fetchHealth(true); fetchEditors(); }}
+            title="Force refresh (bypass cache)"
+          >
+            ↻
+          </button>
+          {cacheInfo && (
+            <span className="cache-info">
+              {cacheInfo.cached
+                ? `cached ${cacheInfo.cacheAge}s ago`
+                : `live (${cacheInfo.computeMs}ms)`}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="castle-grid">
+      <div className={`castle-grid${draggingEditor ? ' drop-mode' : ''}`}>
         {brands.map(brand => (
           <CastleCard
             key={brand.boardId}
@@ -92,6 +137,7 @@ function CastleGrid() {
             loading={loading}
             error={brand.error}
             editors={editorMap[brand.name] || []}
+            onEditorDrop={handleEditorDrop}
           />
         ))}
         {loading && brands.length === 0 && (
@@ -112,8 +158,6 @@ function CastleGrid() {
         <span className="legend-item">✨ ≥70%</span>
         <span className="legend-separator">|</span>
         <span className="legend-item">💤 passive</span>
-        <span className="legend-separator">|</span>
-        <span className="legend-item">⚔️ editor assigned</span>
       </div>
 
       {selectedBrand && (
@@ -123,6 +167,11 @@ function CastleGrid() {
           editors={editorMap[selectedBrand.name] || []}
         />
       )}
+
+      <EditorSection
+        allEditors={allEditors}
+        onDragStart={setDraggingEditor}
+      />
     </div>
   )
 }
