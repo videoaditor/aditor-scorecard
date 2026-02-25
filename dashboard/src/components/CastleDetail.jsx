@@ -68,6 +68,17 @@ function CastleDetail({ brand, onClose }) {
         })}
       </div>
 
+      {/* Alerts */}
+      {brand.alerts && brand.alerts.length > 0 && (
+        <div className="detail-alerts">
+          {brand.alerts.map((alert, i) => (
+            <div key={i} className={`alert-item alert-${alert.severity}`}>
+              {alert.severity === 'critical' ? '🚨' : '⚠️'} {alert.message}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Recent Activity */}
       {recentActivity && recentActivity.length > 0 && (
         <div className="detail-activity">
