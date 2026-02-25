@@ -29,6 +29,11 @@ function CastleGrid() {
       const data = await res.json()
 
       const sortedBrands = (data.brands || []).sort((a, b) => {
+        // Passive brands always at end
+        const aPassive = a.subscription === 'passive' || a.subscription === 'none'
+        const bPassive = b.subscription === 'passive' || b.subscription === 'none'
+        if (aPassive !== bPassive) return aPassive ? 1 : -1
+        
         const stateOrder = { burning: 0, neutral: 1, thriving: 2 }
         const stateA = a.isBuilding ? 'neutral' : a.state
         const stateB = b.isBuilding ? 'neutral' : b.state
@@ -170,7 +175,7 @@ function CastleGrid() {
 
       <EditorSection
         allEditors={allEditors}
-        onDragStart={setDraggingEditor}
+        onDragStart={(editor) => setDraggingEditor(editor)}
       />
     </div>
   )

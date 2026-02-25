@@ -320,16 +320,16 @@
 .castle-card.thriving .castle-name { color: var(--green); }
 .castle-card.burning .castle-name { color: var(--red); }
 
-/* Health Badge */
+/* Health Badge — clear number font */
 .health-badge {
   position: absolute;
   top: 6px;
   right: 6px;
   padding: 3px 7px;
   border-radius: 10px;
-  font-size: 10px;
-  font-weight: 700;
-  font-family: 'Silkscreen', cursive;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 2;
@@ -350,18 +350,32 @@
   color: var(--red);
 }
 
-/* Passive */
+/* Passive — shadowy, darkened */
 .passive-badge {
   position: absolute;
   top: 6px;
   left: 6px;
   font-size: 14px;
   z-index: 2;
-  opacity: 0.8;
+  opacity: 0.7;
+}
+.castle-card.passive {
+  opacity: 0.45;
+  filter: saturate(0.3);
+  transition: all 0.3s ease;
+}
+.castle-card.passive:hover {
+  opacity: 0.7;
+  filter: saturate(0.6);
 }
 .castle-card.passive .castle-image {
-  filter: grayscale(0.3) brightness(0.8) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  opacity: 0.85;
+  filter: grayscale(0.5) brightness(0.6) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+.castle-card.passive .castle-name {
+  color: var(--text-muted);
+}
+.castle-card.passive .health-badge {
+  opacity: 0.5;
 }
 
 /* Loading */
@@ -403,14 +417,38 @@
   color: var(--text-muted);
 }
 
-/* ========== CASTLE DETAIL PANEL ========== */
+/* ========== CASTLE DETAIL PANEL (side panel overlay) ========== */
+.castle-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  animation: overlay-in 0.2s ease-out;
+}
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .castle-detail {
-  margin-top: 32px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 480px;
+  max-width: 90vw;
+  height: 100vh;
+  overflow-y: auto;
   background: var(--surface);
-  border-radius: 16px;
   padding: 32px;
-  border: 1px solid var(--border);
-  animation: slide-down 0.3s ease-out;
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+  z-index: 101;
+  animation: slide-in-right 0.3s ease-out;
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
 }
 @keyframes slide-down {
   from { opacity: 0; transform: translateY(-20px); }
@@ -526,7 +564,7 @@
 .metric-item-value {
   font-size: 24px;
   font-weight: 600;
-  font-family: 'Silkscreen', cursive;
+  font-family: 'JetBrains Mono', monospace;
 }
 .metric-item.thriving .metric-item-value { color: var(--green); }
 .metric-item.neutral .metric-item-value { color: var(--text-dim); }
@@ -613,7 +651,34 @@
   font-size: 13px;
 }
 
-/* Trello Link */
+/* Quick Links row */
+.detail-links {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.detail-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: 'Silkscreen', cursive;
+  transition: all 0.2s ease;
+}
+.detail-link-btn:hover {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: var(--purple);
+}
+
+/* Trello Link (legacy) */
 .detail-trello-link {
   margin-top: 24px;
   display: inline-flex;
@@ -701,7 +766,12 @@
 }
 .editor-card:active {
   cursor: grabbing;
-  transform: scale(0.95);
+}
+/* While dragging — the original card dims */
+.editor-card.dragging {
+  opacity: 0.3;
+  transform: scale(0.9);
+  border-color: var(--purple);
 }
 .editor-card.assigned {
   border-color: rgba(34, 197, 94, 0.3);
@@ -885,8 +955,9 @@
   text-align: center;
 }
 .editor-stat-value {
-  font-family: 'Silkscreen', cursive;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 24px;
+  font-weight: 600;
   color: var(--text);
 }
 .editor-stat-label {

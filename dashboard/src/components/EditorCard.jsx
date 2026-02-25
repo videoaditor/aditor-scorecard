@@ -1,17 +1,37 @@
+import { useState, useRef } from 'react'
+
 function EditorCard({ editor, onClick, onDragStart }) {
+  const [isDragging, setIsDragging] = useState(false)
+  const cardRef = useRef(null)
   const stars = Math.max(0, Math.min(5, Math.round(editor.trustScore || 0)))
   const starDisplay = '★'.repeat(stars) + '☆'.repeat(5 - stars)
 
+  const handleDragStart = (e) => {
+    e.dataTransfer.setData('application/json', JSON.stringify(editor))
+    e.dataTransfer.effectAllowed = 'move'
+    
+    // Custom drag image — use the sprite directly
+    const img = new Image()
+    img.src = `/editors/editor-${editor.sprite}.png`
+    e.dataTransfer.setDragImage(img, 28, 28)
+    
+    setIsDragging(true)
+    onDragStart && onDragStart(editor)
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    onDragStart && onDragStart(null)
+  }
+
   return (
     <div
-      className={`editor-card ${editor.kappa === 'busy' ? 'busy' : 'open'} ${editor.brands.length > 0 ? 'assigned' : ''}`}
-      onClick={() => onClick(editor)}
+      ref={cardRef}
+      className={`editor-card ${editor.kappa === 'busy' ? 'busy' : 'open'} ${editor.brands.length > 0 ? 'assigned' : ''} ${isDragging ? 'dragging' : ''}`}
+      onClick={() => !isDragging && onClick(editor)}
       draggable="true"
-      onDragStart={(e) => {
-        e.dataTransfer.setData('application/json', JSON.stringify(editor))
-        e.dataTransfer.effectAllowed = 'move'
-        onDragStart && onDragStart(editor)
-      }}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <div className="editor-card-sprite">
         <img
