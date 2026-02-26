@@ -10,10 +10,17 @@ function EditorCard({ editor, onClick, onDragStart }) {
     e.dataTransfer.setData('application/json', JSON.stringify(editor))
     e.dataTransfer.effectAllowed = 'move'
     
-    // Custom drag image — use the sprite directly
+    // Custom drag image — fixed 56x56 canvas to prevent browser blowup
+    const canvas = document.createElement('canvas')
+    canvas.width = 56
+    canvas.height = 56
+    const ctx = canvas.getContext('2d')
     const img = new Image()
     img.src = `/editors/editor-${editor.sprite}.png`
-    e.dataTransfer.setDragImage(img, 28, 28)
+    img.onload = () => ctx.drawImage(img, 0, 0, 56, 56)
+    // Draw sync attempt (may already be cached)
+    try { ctx.drawImage(img, 0, 0, 56, 56) } catch(err) {}
+    e.dataTransfer.setDragImage(canvas, 28, 28)
     
     setIsDragging(true)
     onDragStart && onDragStart(editor)
