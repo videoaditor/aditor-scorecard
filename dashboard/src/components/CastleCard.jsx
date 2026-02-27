@@ -45,7 +45,7 @@ function CastleCard({ brand, health, onClick, loading, error, editors, onEditorD
   }
 
   const isPassive = brand.subscription === 'passive' || brand.subscription === 'none'
-  const state = brand.isBuilding ? 'building' : (isPassive ? 'neutral' : brand.state)
+  const state = brand.isBuilding ? 'building' : (isPassive ? 'passive' : brand.state)
 
   return (
     <div
