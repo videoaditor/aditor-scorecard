@@ -244,22 +244,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-}
-/* Green guardian barrier — shows editor is assigned and protecting this castle */
-.editor-sprite::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid rgba(34, 197, 94, 0.85);
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5), inset 0 0 6px rgba(34, 197, 94, 0.15);
-  animation: guardian-pulse 2.5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes guardian-pulse {
-  0%, 100% { border-color: rgba(34, 197, 94, 0.85); box-shadow: 0 0 8px rgba(34, 197, 94, 0.5), inset 0 0 6px rgba(34, 197, 94, 0.15); }
-  50% { border-color: rgba(74, 222, 128, 1); box-shadow: 0 0 14px rgba(74, 222, 128, 0.7), inset 0 0 8px rgba(74, 222, 128, 0.25); }
 }
 .editor-image {
   width: 40px;
