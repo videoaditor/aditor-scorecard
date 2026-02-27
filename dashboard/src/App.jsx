@@ -8,7 +8,7 @@ const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','marg
 
 const METRICS = {
   cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
-  calls:          { name: 'Sales Calls',       icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
+  calls:          { name: 'Calls',             icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
   posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
   mrrDelta:       { name: 'MRR Δ',              icon: '📈', unit: '€±', dir: 'higher', green: 3000, yellow: 1, agg: 'sum', weekOnly: true },
@@ -19,13 +19,13 @@ const METRICS = {
   delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
   applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum' },
-  testCutRate:    { name: 'Test Cut Rate',     icon: '🎬', unit: '%',  dir: 'higher', green: 15,  yellow: 5, agg: 'avg' },
-  clearanceRate:  { name: 'Clearance Rate',    icon: '✅', unit: '%',  dir: 'higher', green: 50,  yellow: 25, agg: 'avg' },
+  testCutRate:    { name: 'Cut Rate',          icon: '🎬', unit: '%',  dir: 'higher', green: 15,  yellow: 5, agg: 'avg' },
+  clearanceRate:  { name: 'Clearance',         icon: '✅', unit: '%',  dir: 'higher', green: 50,  yellow: 25, agg: 'avg' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
-  followers:      { name: 'Follower Growth',  icon: '📊', unit: '±',  dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
+  followers:      { name: 'Followers ±',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg' },
-  acquisitionRate:{ name: 'Acquisition Rate',  icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
+  acquisitionRate:{ name: 'Acquisition',       icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
 }
 
 const DRI = {
@@ -37,7 +37,7 @@ const DRI = {
 
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
-  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#EC4899', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
+  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
   { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors'] },
 ]
@@ -58,14 +58,16 @@ function parseSheetData(text) {
     return obj
   }).filter(r => r.week && r.start).map((r, i, arr) => {
     // Computed metrics
-    // Test Cut Rate = testCuts / applicants * 100
+    // Test Cut Rate = testCuts / applicants * 100 (% of applicants who make it to test cut)
     if (r.testCuts != null && r.applicants != null && r.applicants > 0) {
       r.testCutRate = Math.round(r.testCuts / r.applicants * 1000) / 10
     }
-    // Clearance Rate = testPassed / prev week's testCuts * 100
-    if (r.testPassed != null && i > 0 && arr[i-1].testCuts != null && arr[i-1].testCuts > 0) {
-      r.clearanceRate = Math.round(r.testPassed / arr[i-1].testCuts * 1000) / 10
+    // Clearance Rate = testPassed / testCuts this week * 100 (% of test cuts who pass)
+    if (r.testPassed != null && r.testCuts != null && r.testCuts > 0) {
+      r.clearanceRate = Math.round(r.testPassed / r.testCuts * 1000) / 10
     }
+    // Good Editors = treat 0 as null (not tracked that week)
+    if (r.goodEditors === 0) r.goodEditors = null
     return r
   })
 }

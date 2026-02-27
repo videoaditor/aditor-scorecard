@@ -1147,6 +1147,9 @@
   font-family: 'Silkscreen', cursive;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .metric-item-value {
   font-size: 20px;
@@ -1180,8 +1183,8 @@
   border-radius: 4px;
   transition: width 0.5s ease;
 }
-.metric-item.thriving .metric-progress-fill { background: linear-gradient(90deg, var(--green), #4ade80); }
-.metric-item.neutral .metric-progress-fill { background: linear-gradient(90deg, var(--text-muted), rgba(255,255,255,0.4)); }
+.metric-item.thriving .metric-progress-fill { background: linear-gradient(90deg, #f97316, #fb923c); }
+.metric-item.neutral .metric-progress-fill { background: linear-gradient(90deg, #a16207, #d97706); }
 .metric-item.burning .metric-progress-fill { background: linear-gradient(90deg, var(--red), #ff6b6b); }
 
 .health-thriving { color: var(--green); }
