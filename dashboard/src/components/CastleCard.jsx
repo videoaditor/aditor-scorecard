@@ -1,7 +1,43 @@
 import { useState } from 'react'
 
+// localStorage key for extinguished brands
+const EXTINGUISH_KEY = 'extinguished_brands'
+
+function getExtinguished() {
+  try {
+    const data = JSON.parse(localStorage.getItem(EXTINGUISH_KEY) || '{}')
+    const now = Date.now()
+    // Expire at midnight local time
+    const midnight = new Date()
+    midnight.setHours(24, 0, 0, 0)
+    // Clean up any expired entries
+    const cleaned = Object.fromEntries(
+      Object.entries(data).filter(([, expiry]) => expiry > now)
+    )
+    if (Object.keys(cleaned).length !== Object.keys(data).length) {
+      localStorage.setItem(EXTINGUISH_KEY, JSON.stringify(cleaned))
+    }
+    return cleaned
+  } catch { return {} }
+}
+
+function setExtinguished(boardId) {
+  const data = getExtinguished()
+  const midnight = new Date()
+  midnight.setHours(24, 0, 0, 0)
+  data[boardId] = midnight.getTime()
+  localStorage.setItem(EXTINGUISH_KEY, JSON.stringify(data))
+}
+
 function CastleCard({ brand, health, onClick, loading, error, editors, onEditorDrop, isExpanded, isDimmed }) {
   const [dragOver, setDragOver] = useState(false)
+  const [extinguished, setExtinguishedState] = useState(() => !!getExtinguished()[brand?.boardId])
+
+  const handleExtinguish = (e) => {
+    e.stopPropagation()
+    setExtinguished(brand.boardId)
+    setExtinguishedState(true)
+  }
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -45,7 +81,9 @@ function CastleCard({ brand, health, onClick, loading, error, editors, onEditorD
   }
 
   const isPassive = brand.subscription === 'passive' || brand.subscription === 'none'
-  const state = brand.isBuilding ? 'building' : (isPassive ? 'passive' : brand.state)
+  const rawState = brand.isBuilding ? 'building' : (isPassive ? 'passive' : brand.state)
+  // If manually extinguished, downgrade burning → embers until midnight
+  const state = (rawState === 'burning' && extinguished) ? 'embers' : rawState
 
   return (
     <div
@@ -82,6 +120,14 @@ function CastleCard({ brand, health, onClick, loading, error, editors, onEditorD
         )}
       </div>
       <div className="castle-name">{brand.name}</div>
+      {rawState === 'burning' && !extinguished && (
+        <button className="extinguish-btn" onClick={handleExtinguish} title="Mark as handled — suppresses fire until tomorrow">
+          🪣 extinguish
+        </button>
+      )}
+      {state === 'embers' && (
+        <div className="embers-badge" title="Manually extinguished — resets at midnight">🪵 handled</div>
+      )}
       {dragOver && <div className="drop-indicator">Drop to assign</div>}
     </div>
   )
