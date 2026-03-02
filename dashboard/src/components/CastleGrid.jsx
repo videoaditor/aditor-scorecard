@@ -109,7 +109,7 @@ function CastleGrid() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          brandRecordId: brandRecordIds[brand.name],
+          brandRecordId: brandRecordIds[brand.boardId],
           editorRecordId: editor.id,
         }),
       })

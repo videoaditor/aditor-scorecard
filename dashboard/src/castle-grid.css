@@ -1362,8 +1362,11 @@
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
   object-fit: contain;
 }
+.editor-card.busy .editor-card-img {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+}
 .editor-card.open .editor-card-img {
-  filter: grayscale(0.3) brightness(0.7) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.3)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
 }
 
 .editor-card-info {

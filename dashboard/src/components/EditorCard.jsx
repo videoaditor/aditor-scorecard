@@ -3,8 +3,10 @@ import { useState, useRef } from 'react'
 function EditorCard({ editor, onClick, onDragStart }) {
   const [isDragging, setIsDragging] = useState(false)
   const cardRef = useRef(null)
-  const stars = Math.max(0, Math.min(5, Math.round(editor.trustScore || 0)))
+  // trustScore is 0-100, map to 0-5 stars
+  const stars = Math.max(0, Math.min(5, Math.round((editor.trustScore || 0) / 20)))
   const starDisplay = '★'.repeat(stars) + '☆'.repeat(5 - stars)
+  const isAvailable = !editor.hasAssignment && editor.brands.length === 0
 
   const handleDragStart = (e) => {
     e.dataTransfer.setData('application/json', JSON.stringify(editor))
@@ -49,12 +51,14 @@ function EditorCard({ editor, onClick, onDragStart }) {
       </div>
       <div className="editor-card-info">
         <div className="editor-card-name">{editor.name.split(' ')[0]}</div>
-        <div className="editor-card-stars">{starDisplay}</div>
+        <div className="editor-card-stars" title={`Trust: ${editor.trustScore || 0}/100 (${editor.trelloCards || 0} completed cards)`}>{starDisplay}</div>
         <div className="editor-card-meta">
-          <span className={`editor-kappa ${editor.kappa}`}>{editor.kappa}</span>
+          <span className={`editor-kappa ${isAvailable ? 'open' : 'busy'}`}>
+            {isAvailable ? '✦ available' : 'assigned'}
+          </span>
           <span className="editor-rank">{editor.rank}</span>
         </div>
-        {editor.brands.length > 0 && (
+        {editor.brands.length > 0 ? (
           <div className="editor-card-brands">
             {editor.brands.slice(0, 2).map((b, i) => (
               <span key={i} className="editor-brand-tag">{b}</span>
@@ -62,6 +66,10 @@ function EditorCard({ editor, onClick, onDragStart }) {
             {editor.brands.length > 2 && (
               <span className="editor-brand-more">+{editor.brands.length - 2}</span>
             )}
+          </div>
+        ) : (
+          <div className="editor-card-brands">
+            <span className="editor-brand-tag" style={{background:'rgba(16,185,129,0.15)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)'}}>ready to assign</span>
           </div>
         )}
       </div>
