@@ -238,11 +238,29 @@ const MetricRow = ({ metricKey, columns, view }) => {
           const val = col[metricKey]
           const isCurrent = col.isCurrent
           const isTotal = col.isTotal
-          const status = (isCurrent || isTotal) ? 'current' : getStatus(val, metricKey)
+          const status = isCurrent ? 'current' : getStatus(val, metricKey)
+          
+          // Calculate delta % for total column
+          let deltaEl = null
+          if (isTotal) {
+            const filled = columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal)
+            if (filled.length >= 2) {
+              const first = filled[0][metricKey]
+              const last = filled[filled.length - 1][metricKey]
+              if (first != null && last != null && first !== 0) {
+                const delta = Math.round(((last - first) / Math.abs(first)) * 100)
+                const dStatus = getStatus(last, metricKey)
+                const sign = delta >= 0 ? '+' : ''
+                deltaEl = <span className={`delta-badge status-text-${dStatus}`}>{sign}{delta}%</span>
+              }
+            }
+          }
+          
           return (
             <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
               {!isCurrent && !isTotal && <StatusDot status={status} />}
-              <span className={`metric-value ${isTotal ? 'total-value' : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
+              <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
+              {deltaEl}
             </div>
           )
         })}
