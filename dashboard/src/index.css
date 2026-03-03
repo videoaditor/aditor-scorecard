@@ -286,14 +286,12 @@ body {
   .period-selector {
     display: flex;
     gap: 6px;
-    flex: 1;
-    min-width: 0;
+    flex-shrink: 0;
   }
   .period-select {
-    flex: 1;
-    min-width: 0;
     font-size: 12px;
     padding: 7px 8px;
+    width: auto;
   }
   .view-toggle {
     flex-shrink: 0;
@@ -322,9 +320,9 @@ body {
 
   /* Department cards */
   .dept-card {
-    padding: 14px 12px;
+    padding: 14px 0px 14px 12px;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
   }
   .dept-header {
     margin-bottom: 10px;
@@ -345,15 +343,21 @@ body {
     height: 26px;
   }
 
-  /* Time headers — must scroll in sync with metric rows */
-  .time-headers {
+  /* Scrollable table area — time headers + metric rows share one scroll container */
+  .dept-table {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    margin-bottom: 6px;
+    margin-right: -12px; /* bleed to card edge */
+    padding-right: 12px;
   }
-  .time-headers::-webkit-scrollbar {
+  .dept-table::-webkit-scrollbar {
     display: none;
+  }
+  .time-headers {
+    overflow-x: visible;
+    margin-bottom: 6px;
+    min-width: max-content;
   }
   .time-label-spacer {
     min-width: 110px;
@@ -365,32 +369,28 @@ body {
     flex-shrink: 0;
   }
   .time-label {
-    width: 54px;
-    min-width: 54px;
+    width: 52px;
+    min-width: 52px;
     font-size: 9px;
     text-align: center;
   }
   .time-label.total-label {
-    width: 64px;
-    min-width: 64px;
+    width: 60px;
+    min-width: 60px;
     margin-left: 10px;
     padding-left: 8px;
     font-size: 9px;
   }
 
-  /* Metric rows — horizontal scroll */
+  /* Metric rows */
   .dept-metrics {
     gap: 4px;
   }
   .metric-row {
-    padding: 7px 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    padding: 7px 0 7px 0;
+    overflow-x: visible;
     flex-wrap: nowrap;
-  }
-  .metric-row::-webkit-scrollbar {
-    display: none;
+    min-width: max-content;
   }
   .metric-label {
     width: 110px;
@@ -398,6 +398,7 @@ body {
     max-width: 110px;
     gap: 5px;
     flex-shrink: 0;
+    padding-left: 0;
   }
   .metric-icon {
     font-size: 11px;
@@ -411,14 +412,14 @@ body {
     flex-wrap: nowrap;
   }
   .metric-cell {
-    width: 54px;
-    min-width: 54px;
+    width: 52px;
+    min-width: 52px;
     gap: 3px;
     flex-shrink: 0;
   }
   .metric-cell.total-cell {
-    width: 64px;
-    min-width: 64px;
+    width: 60px;
+    min-width: 60px;
     margin-left: 10px;
     padding-left: 8px;
   }

@@ -278,25 +278,27 @@ const DeptCard = ({ dept, columns, view }) => (
         {(DRI[dept.id] || []).map(p => <Avatar key={p.initials} person={p} />)}
       </div>
     </div>
-    <div className="time-headers">
-      <div className="time-label-spacer"></div>
-      <div className="time-labels">
-        {columns.map((col, i) => (
-          <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
-            {col.isTotal ? 'Total' : (view === 'month' ? `W${i + 1}` : col.label)}
-          </div>
-        ))}
+    <div className="dept-table">
+      <div className="time-headers">
+        <div className="time-label-spacer"></div>
+        <div className="time-labels">
+          {columns.map((col, i) => (
+            <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
+              {col.isTotal ? 'Total' : (view === 'month' ? `W${i + 1}` : col.label)}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-    <div className="dept-metrics">
-      {dept.metrics
-        .filter(k => {
-          const m = METRICS[k]
-          if (view === 'month' && m?.quarterOnly) return false
-          if (view === 'quarter' && m?.weekOnly) return false
-          return true
-        })
-        .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+      <div className="dept-metrics">
+        {dept.metrics
+          .filter(k => {
+            const m = METRICS[k]
+            if (view === 'month' && m?.quarterOnly) return false
+            if (view === 'quarter' && m?.weekOnly) return false
+            return true
+          })
+          .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+      </div>
     </div>
   </div>
 )
@@ -372,7 +374,18 @@ function App() {
     try {
       const res = await fetch(SHEET_URL + '&t=' + Date.now())
       const text = await res.text()
-      setAllWeeks(parseSheetData(text))
+      const weeks = parseSheetData(text)
+      setAllWeeks(weeks)
+      // Auto-jump to the most recent month that has data
+      if (weeks.length > 0) {
+        const last = weeks[weeks.length - 1]
+        const { month: lm, year: ly } = getMonthYear(last)
+        if (lm >= 0) {
+          setMonth(lm)
+          setYear(ly)
+          setQuarter(Math.floor(lm / 3))
+        }
+      }
       setLastSynced(new Date())
       setLoading(false)
     } catch (e) {
