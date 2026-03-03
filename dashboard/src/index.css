@@ -228,136 +228,215 @@ body {
   gap: 24px;
 }
 
+/* Tablet */
 @media (max-width: 1000px) {
   .cards-grid {
     grid-template-columns: 1fr;
   }
-  
   .app {
-    padding: 24px;
+    padding: 24px 28px;
   }
 }
 
-/* Mobile */
-@media (max-width: 600px) {
+/* Mobile — full rewrite */
+@media (max-width: 640px) {
+  /* Layout */
   .app {
-    padding: 16px 12px;
+    padding: 16px 14px;
+  }
+  .cards-grid {
+    gap: 12px;
   }
 
+  /* Tab nav */
+  .tab-navigation {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Header: stack title above controls */
   .header {
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
     padding-bottom: 16px;
+    align-items: stretch;
+  }
+  .title {
+    font-size: 20px;
+  }
+  .subtitle {
+    font-size: 12px;
   }
 
+  /* Controls row: period + toggle + health + sync all in one flex row */
   .header-right {
+    display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     width: 100%;
   }
-
-  .title {
-    font-size: 22px;
-  }
-
   .period-selector {
+    display: flex;
+    gap: 6px;
     flex: 1;
+    min-width: 0;
   }
-
   .period-select {
     flex: 1;
+    min-width: 0;
     font-size: 12px;
-    padding: 6px 8px;
+    padding: 7px 8px;
   }
-
+  .view-toggle {
+    flex-shrink: 0;
+  }
   .toggle-btn {
-    padding: 6px 12px;
+    padding: 7px 10px;
     font-size: 12px;
   }
-
   .health-summary {
-    gap: 6px;
+    gap: 5px;
   }
-
   .health-item {
     padding: 4px 8px;
-    font-size: 12px;
+    font-size: 11px;
+    gap: 4px;
   }
-
-  .dept-card {
-    padding: 16px 12px;
-    border-radius: 12px;
+  .health-dot {
+    width: 6px;
+    height: 6px;
   }
-
-  .dept-header {
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-  }
-
-  .dept-name {
+  .sync-btn {
+    width: 30px;
+    height: 30px;
     font-size: 14px;
   }
 
+  /* Department cards */
+  .dept-card {
+    padding: 14px 12px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .dept-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    gap: 8px;
+  }
+  .dept-icon {
+    font-size: 16px;
+  }
+  .dept-name {
+    font-size: 14px;
+  }
   .dri-name {
     display: none;
   }
-
-  /* Make metric rows scroll horizontally */
-  .metric-row {
-    padding: 8px;
+  .dri-avatar {
+    width: 26px;
+    height: 26px;
   }
 
-  .metric-label {
-    min-width: 100px;
-    gap: 6px;
-  }
-
-  .metric-name {
-    font-size: 11px;
-  }
-
-  .metric-icon {
-    font-size: 12px;
-  }
-
-  .metric-values {
-    gap: 4px;
+  /* Time headers — must scroll in sync with metric rows */
+  .time-headers {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: 6px;
   }
-
-  .metric-cell {
-    width: 60px;
-    min-width: 60px;
+  .time-headers::-webkit-scrollbar {
+    display: none;
   }
-
-  .metric-value {
-    font-size: 12px;
-  }
-
   .time-label-spacer {
-    min-width: 100px;
+    min-width: 110px;
+    max-width: 110px;
+    flex-shrink: 0;
   }
-
+  .time-labels {
+    gap: 0;
+    flex-shrink: 0;
+  }
   .time-label {
-    width: 60px;
-    min-width: 60px;
+    width: 54px;
+    min-width: 54px;
+    font-size: 9px;
+    text-align: center;
+  }
+  .time-label.total-label {
+    width: 64px;
+    min-width: 64px;
+    margin-left: 10px;
+    padding-left: 8px;
     font-size: 9px;
   }
 
-  .time-labels {
+  /* Metric rows — horizontal scroll */
+  .dept-metrics {
     gap: 4px;
+  }
+  .metric-row {
+    padding: 7px 8px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .metric-row::-webkit-scrollbar {
+    display: none;
+  }
+  .metric-label {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .metric-icon {
+    font-size: 11px;
+  }
+  .metric-name {
+    font-size: 10px;
+  }
+  .metric-values {
+    gap: 0;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+  }
+  .metric-cell {
+    width: 54px;
+    min-width: 54px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .metric-cell.total-cell {
+    width: 64px;
+    min-width: 64px;
+    margin-left: 10px;
+    padding-left: 8px;
+  }
+  .metric-value {
+    font-size: 11px;
+  }
+  .total-value {
+    font-size: 12px;
+  }
+  .status-dot {
+    width: 5px;
+    height: 5px;
   }
 
+  /* Footer */
   .footer {
     margin-top: 24px;
     font-size: 11px;
-  }
-
-  .cards-grid {
-    gap: 16px;
   }
 }
 
