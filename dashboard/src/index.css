@@ -19,8 +19,8 @@
   --yellow: #f59e0b;
   --red: #EF4444;
   
-  --purple: #8B5CF6;
-  --pink: #EC4899;
+  --purple: #F97316;
+  --pink: #FB923C;
   --orange: #F97316;
 }
 
@@ -72,8 +72,8 @@ body {
 
 .tab-btn.active {
   color: var(--text);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(236, 72, 153, 0.2) 100%);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.25) 0%, rgba(251, 146, 60, 0.2) 100%);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
 }
 
 /* Header */
@@ -99,7 +99,7 @@ body {
 }
 
 .title-accent {
-  background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 50%, var(--orange) 100%);
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FBBF24 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -145,7 +145,7 @@ body {
 }
 
 .period-select:focus {
-  border-color: var(--purple);
+  border-color: var(--orange);
 }
 
 /* View Toggle */
@@ -177,7 +177,7 @@ body {
 
 .toggle-btn.active {
   color: var(--text);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(251, 146, 60, 0.15) 100%);
 }
 
 /* Health Summary */
@@ -627,11 +627,40 @@ body {
   gap: 16px;
 }
 
+/* Sync Button */
+.sync-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: rgba(255,255,255,0.6);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sync-btn:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.sync-btn.syncing {
+  color: var(--orange);
+  animation: spin 1s linear infinite;
+}
+
+/* Loading Spinner */
 .loading-spinner {
   width: 40px;
   height: 40px;
   border: 3px solid var(--border);
-  border-top-color: var(--purple);
+  border-top-color: var(--orange);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -642,7 +671,7 @@ body {
 
 .error-screen button {
   padding: 10px 20px;
-  background: var(--purple);
+  background: var(--orange);
   color: white;
   border: none;
   border-radius: 8px;

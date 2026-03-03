@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import CastleGrid from './components/CastleGrid'
 
 const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&range=Sheet1!A30:V100`
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`
 
 const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers','acquisitionRate']
 
@@ -29,8 +29,8 @@ const METRICS = {
 }
 
 const DRI = {
-  marketing: [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
-  sales:     [{ name: 'Alan', initials: 'AS', color: '#8B5CF6', img: './avatars/alan.jpg' }],
+  marketing: [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
+  sales:     [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
   cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }, { name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
   people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
 }
@@ -356,6 +356,8 @@ const PeriodSelector = ({ view, month, setMonth, quarter, setQuarter, year, setY
 function App() {
   const [allWeeks, setAllWeeks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [lastSynced, setLastSynced] = useState(null)
   const [error, setError] = useState(null)
   const [view, setView] = useState('month') // 'month' or 'quarter'
   const [activeTab, setActiveTab] = useState('scorecard') // 'scorecard' or 'kingdom'
@@ -365,20 +367,25 @@ function App() {
   const [quarter, setQuarter] = useState(Math.floor(today.getMonth() / 3))
   const [year, setYear] = useState(today.getFullYear())
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(SHEET_URL)
-        const text = await res.text()
-        setAllWeeks(parseSheetData(text))
-        setLoading(false)
-      } catch (e) {
-        setError(e.message)
-        setLoading(false)
-      }
+  const load = async (isManual = false) => {
+    if (isManual) setSyncing(true)
+    try {
+      const res = await fetch(SHEET_URL + '&t=' + Date.now())
+      const text = await res.text()
+      setAllWeeks(parseSheetData(text))
+      setLastSynced(new Date())
+      setLoading(false)
+    } catch (e) {
+      setError(e.message)
+      setLoading(false)
+    } finally {
+      if (isManual) setSyncing(false)
     }
+  }
+
+  useEffect(() => {
     load()
-    const iv = setInterval(load, 5 * 60 * 1000)
+    const iv = setInterval(() => load(), 5 * 60 * 1000)
     return () => clearInterval(iv)
   }, [])
 
@@ -497,6 +504,13 @@ function App() {
           />
           <ViewToggle view={view} setView={setView} />
           <HealthSummary columns={columns} />
+          <button
+            className={`sync-btn ${syncing ? 'syncing' : ''}`}
+            onClick={() => load(true)}
+            title={lastSynced ? `Last synced: ${lastSynced.toLocaleTimeString()}` : 'Sync now'}
+          >
+            {syncing ? '⟳' : '↻'}
+          </button>
         </div>
       </header>
 
