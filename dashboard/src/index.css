@@ -563,29 +563,48 @@ body {
 /* Delta badge */
 .delta-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  opacity: 0.85;
-  margin-left: 4px;
-  letter-spacing: -0.02em;
+  opacity: 0.8;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  display: block;
 }
 
 /* Total column */
 .metric-cell.total-cell {
-  border-left: 1px solid var(--border);
-  padding-left: 8px;
+  border-left: 2px solid rgba(249, 115, 22, 0.4);
+  margin-left: 6px;
+  padding-left: 10px;
+  min-width: 84px;
+  width: 84px;
+  background: rgba(249, 115, 22, 0.04);
+  border-radius: 0 6px 6px 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .total-value {
-  color: var(--text);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .time-label.total-label {
-  color: var(--text-dim);
-  font-weight: 600;
-  border-left: 1px solid var(--border);
-  padding-left: 8px;
+  color: rgba(249, 115, 22, 0.9);
+  font-weight: 700;
+  border-left: 2px solid rgba(249, 115, 22, 0.4);
+  margin-left: 6px;
+  padding-left: 10px;
+  min-width: 84px;
+  width: 84px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
 }
 
 .metric-value {

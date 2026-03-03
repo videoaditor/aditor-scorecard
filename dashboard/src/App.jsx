@@ -45,6 +45,9 @@ const DEPARTMENTS = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 
+// Columns that must be numeric (may come as strings from Sheets)
+const NUMERIC_COLS = new Set(['cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers','acquisitionRate'])
+
 function parseSheetData(text) {
   const json = text.replace(/^[^(]+\(/, '').replace(/\);?$/, '')
   const data = JSON.parse(json)
@@ -52,8 +55,15 @@ function parseSheetData(text) {
     const obj = {}
     COLS.forEach((col, i) => {
       const cell = row.c?.[i]
-      obj[col] = cell?.v ?? null
-      if (col === 'start' || col === 'end') obj[col] = cell?.f || cell?.v || null
+      let val = cell?.v ?? null
+      if (col === 'start' || col === 'end') {
+        val = cell?.f || cell?.v || null
+      } else if (NUMERIC_COLS.has(col) && val !== null) {
+        // Coerce strings like '3' to numbers
+        const n = Number(val)
+        val = isNaN(n) ? null : n
+      }
+      obj[col] = val
     })
     return obj
   }).filter(r => r.week && r.start).map((r, i, arr) => {
@@ -146,17 +156,17 @@ const padToFour = (items, includeTotal = true) => {
   
   const filled = weeks.filter(w => !w.empty).slice(0, 4)
   
-  // Calculate monthly total
+  // Calculate monthly total/average
   const total = { label: 'Total', empty: false, isTotal: true, isCurrent: false }
   Object.keys(METRICS).forEach(key => {
     const m = METRICS[key]
-    const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined)
+    const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined && !isNaN(Number(v)))
     if (vals.length === 0) {
       total[key] = null
     } else if (m.agg === 'sum' || m.unit === '€±' || m.unit === '±') {
-      total[key] = vals.reduce((a, b) => a + b, 0)
+      total[key] = vals.reduce((a, b) => Number(a) + Number(b), 0)
     } else if (m.agg === 'avg') {
-      total[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+      total[key] = Math.round(vals.reduce((a, b) => Number(a) + Number(b), 0) / vals.length * 10) / 10
     } else if (m.agg === 'last') {
       total[key] = vals[vals.length - 1]
     }
@@ -258,7 +268,7 @@ const MetricRow = ({ metricKey, columns, view }) => {
           
           return (
             <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
-              {!isCurrent && !isTotal && <StatusDot status={status} />}
+              {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
               {deltaEl}
             </div>
