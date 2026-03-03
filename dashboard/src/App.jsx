@@ -38,7 +38,7 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
   { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F97316', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors'] },
 ]
 
@@ -256,9 +256,10 @@ const MetricRow = ({ metricKey, columns, view }) => {
             ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal).length
             : 1
           const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
+          const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
           
           return (
-            <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+            <div key={col.label || i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
               {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
             </div>
@@ -316,9 +317,9 @@ const HealthSummary = ({ columns }) => {
   }
   return (
     <div className="health-summary">
-      <div className="health-item green"><span className="health-dot"></span><span>{g}</span></div>
-      <div className="health-item yellow"><span className="health-dot"></span><span>{y}</span></div>
-      <div className="health-item red"><span className="health-dot"></span><span>{r}</span></div>
+      <div className="health-item green"><span className="health-dot"></span><span>{g}</span><span className="health-label">on track</span></div>
+      <div className="health-item yellow"><span className="health-dot"></span><span>{y}</span><span className="health-label">at risk</span></div>
+      <div className="health-item red"><span className="health-dot"></span><span>{r}</span><span className="health-label">off track</span></div>
     </div>
   )
 }

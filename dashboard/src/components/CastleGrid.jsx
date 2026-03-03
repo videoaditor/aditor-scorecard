@@ -155,6 +155,33 @@ function CastleGrid() {
         </div>
       </div>
 
+      {/* Brand health summary bar */}
+      {brands.length > 0 && (() => {
+        const activeBrands = brands.filter(b => b.subscription !== 'passive' && b.subscription !== 'none')
+        const thriving = activeBrands.filter(b => b.state === 'thriving').length
+        const neutral = activeBrands.filter(b => b.state === 'neutral' || b.isBuilding).length
+        const burning = activeBrands.filter(b => b.state === 'burning').length
+        return (
+          <div className="brand-summary-bar">
+            <div className="brand-summary-item thriving">
+              <span className="brand-summary-dot"></span>
+              <span className="brand-summary-count">{thriving}</span>
+              <span className="brand-summary-label">thriving</span>
+            </div>
+            <div className="brand-summary-item neutral">
+              <span className="brand-summary-dot"></span>
+              <span className="brand-summary-count">{neutral}</span>
+              <span className="brand-summary-label">neutral</span>
+            </div>
+            <div className="brand-summary-item burning">
+              <span className="brand-summary-dot"></span>
+              <span className="brand-summary-count">{burning}</span>
+              <span className="brand-summary-label">burning</span>
+            </div>
+          </div>
+        )
+      })()}
+
       <div className={`castle-grid${draggingEditor ? ' drop-mode' : ''}${isExpanded ? ' has-expanded' : ''}`}>
         {brands.map(brand => {
           const isSelected = selectedBrand?.boardId === brand.boardId
