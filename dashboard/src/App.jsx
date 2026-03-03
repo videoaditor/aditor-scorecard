@@ -175,13 +175,16 @@ const padToFour = (items, includeTotal = true) => {
   return [...weeks.slice(0, 4), total]
 }
 
-const getStatus = (value, key) => {
+// weekCount: how many weeks contributed to this value (for scaling sum thresholds)
+const getStatus = (value, key, weekCount = 1) => {
   if (value === null || value === undefined) return 'neutral'
   const m = METRICS[key]
   if (!m) return 'neutral'
+  // Scale thresholds for sum metrics when showing totals across multiple weeks
+  const scale = (m.agg === 'sum') ? weekCount : 1
   if (m.dir === 'higher') {
-    if (value >= m.green) return 'green'
-    if (value >= m.yellow) return 'yellow'
+    if (value >= m.green * scale) return 'green'
+    if (value >= m.yellow * scale) return 'yellow'
     return 'red'
   } else {
     if (value <= m.green) return 'green'
@@ -248,29 +251,16 @@ const MetricRow = ({ metricKey, columns, view }) => {
           const val = col[metricKey]
           const isCurrent = col.isCurrent
           const isTotal = col.isTotal
-          const status = isCurrent ? 'current' : getStatus(val, metricKey)
-          
-          // Calculate delta % for total column
-          let deltaEl = null
-          if (isTotal) {
-            const filled = columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal)
-            if (filled.length >= 2) {
-              const first = filled[0][metricKey]
-              const last = filled[filled.length - 1][metricKey]
-              if (first != null && last != null && first !== 0) {
-                const delta = Math.round(((last - first) / Math.abs(first)) * 100)
-                const dStatus = getStatus(last, metricKey)
-                const sign = delta >= 0 ? '+' : ''
-                deltaEl = <span className={`delta-badge status-text-${dStatus}`}>{sign}{delta}%</span>
-              }
-            }
-          }
+          // For total column, scale sum thresholds by number of filled weeks
+          const filledWeeks = isTotal
+            ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal).length
+            : 1
+          const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
           
           return (
             <div key={col.label || i} className={`metric-cell ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
               {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
-              {deltaEl}
             </div>
           )
         })}

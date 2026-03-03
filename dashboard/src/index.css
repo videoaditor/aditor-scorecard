@@ -560,32 +560,22 @@ body {
   opacity: 0.7;
 }
 
-/* Delta badge */
+/* Delta badge (hidden - removed from total column) */
 .delta-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 600;
-  opacity: 0.8;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  display: block;
+  display: none;
 }
 
 /* Total column */
 .metric-cell.total-cell {
   border-left: 2px solid rgba(249, 115, 22, 0.4);
-  margin-left: 6px;
-  padding-left: 10px;
-  min-width: 84px;
-  width: 84px;
+  margin-left: 16px;
+  padding-left: 12px;
+  min-width: 80px;
+  width: 80px;
   background: rgba(249, 115, 22, 0.04);
   border-radius: 0 6px 6px 0;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1px;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  flex-shrink: 0;
+  justify-content: flex-start;
 }
 
 .total-value {
@@ -597,10 +587,10 @@ body {
   color: rgba(249, 115, 22, 0.9);
   font-weight: 700;
   border-left: 2px solid rgba(249, 115, 22, 0.4);
-  margin-left: 6px;
-  padding-left: 10px;
-  min-width: 84px;
-  width: 84px;
+  margin-left: 16px;
+  padding-left: 12px;
+  min-width: 80px;
+  width: 80px;
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
