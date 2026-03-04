@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getEditorSpriteSrc } from '../utils/editorSprite'
 
 // localStorage key for extinguished brands
 const EXTINGUISH_KEY = 'extinguished_brands'
@@ -110,7 +111,7 @@ function CastleCard({ brand, health, onClick, loading, error, editors, onEditorD
             {editors.slice(0, 2).map((editor, i) => (
               <div key={i} className="editor-sprite" title={editor.name}>
                 <img
-                  src={`/editors/editor-${editor.sprite}.png`}
+                  src={getEditorSpriteSrc(editor)}
                   alt={editor.name}
                   className="editor-image"
                 />

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { getEditorSpriteSrc } from '../utils/editorSprite'
 
 function EditorCard({ editor, onClick, onDragStart }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -11,19 +12,19 @@ function EditorCard({ editor, onClick, onDragStart }) {
   const handleDragStart = (e) => {
     e.dataTransfer.setData('application/json', JSON.stringify(editor))
     e.dataTransfer.effectAllowed = 'move'
-    
+
     // Custom drag image — fixed 56x56 canvas to prevent browser blowup
     const canvas = document.createElement('canvas')
     canvas.width = 56
     canvas.height = 56
     const ctx = canvas.getContext('2d')
     const img = new Image()
-    img.src = `/editors/editor-${editor.sprite}.png`
+    img.src = getEditorSpriteSrc(editor)
     img.onload = () => ctx.drawImage(img, 0, 0, 56, 56)
     // Draw sync attempt (may already be cached)
-    try { ctx.drawImage(img, 0, 0, 56, 56) } catch(err) {}
+    try { ctx.drawImage(img, 0, 0, 56, 56) } catch (err) { }
     e.dataTransfer.setDragImage(canvas, 28, 28)
-    
+
     setIsDragging(true)
     onDragStart && onDragStart(editor)
   }
@@ -44,7 +45,7 @@ function EditorCard({ editor, onClick, onDragStart }) {
     >
       <div className="editor-card-sprite">
         <img
-          src={`/editors/editor-${editor.sprite}.png`}
+          src={getEditorSpriteSrc(editor)}
           alt={editor.name}
           className="editor-card-img"
         />
@@ -69,7 +70,7 @@ function EditorCard({ editor, onClick, onDragStart }) {
           </div>
         ) : (
           <div className="editor-card-brands">
-            <span className="editor-brand-tag" style={{background:'rgba(16,185,129,0.15)',color:'#10b981',border:'1px solid rgba(16,185,129,0.3)'}}>ready to assign</span>
+            <span className="editor-brand-tag" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}>ready to assign</span>
           </div>
         )}
       </div>

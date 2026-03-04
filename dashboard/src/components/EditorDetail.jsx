@@ -1,3 +1,5 @@
+import { getEditorSpriteSrc } from '../utils/editorSprite'
+
 function EditorDetail({ editor, onClose }) {
   const stars = Math.max(0, Math.min(5, Math.round(editor.trustScore || 0)))
   const starDisplay = '★'.repeat(stars) + '☆'.repeat(5 - stars)
@@ -7,7 +9,7 @@ function EditorDetail({ editor, onClose }) {
       <div className="editor-detail-header">
         <div className="editor-detail-profile">
           <img
-            src={`/editors/editor-${editor.sprite}.png`}
+            src={getEditorSpriteSrc(editor)}
             alt={editor.name}
             className="editor-detail-avatar"
           />

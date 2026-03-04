@@ -3,6 +3,7 @@ import CastleCard from './CastleCard'
 import CastleDetail from './CastleDetail'
 import EditorSection from './EditorSection'
 import BrandActions from './BrandActions'
+import { getEditorSpriteSrc } from '../utils/editorSprite'
 import '../castle-grid.css'
 
 const API_URL = 'https://gen.aditor.ai/api/brand-health'
@@ -236,7 +237,7 @@ function CastleGrid() {
                   <div className="brand-expanded-editors">
                     {(editorMap[selectedBrand.name] || []).map((editor, i) => (
                       <div key={i} className="brand-expanded-editor-chip">
-                        <img src={`/editors/editor-${editor.sprite}.png`} alt={editor.name} className="brand-expanded-editor-img" />
+                        <img src={getEditorSpriteSrc(editor)} alt={editor.name} className="brand-expanded-editor-img" />
                         <span>{editor.name}</span>
                       </div>
                     ))}
