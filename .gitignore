@@ -3,3 +3,6 @@ dashboard/node_modules/
 dashboard/dist/
 .env
 *.log
+.devcontainer/
+new-client.sh
+README.md

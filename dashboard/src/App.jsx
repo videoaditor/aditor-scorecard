@@ -38,8 +38,8 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
   { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'cardsPerEditor', 'delivery', 'wins', 'acquisitionRate'] },
-  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors'] },
+  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors', 'cardsPerEditor'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -66,7 +66,7 @@ function parseSheetData(text) {
       obj[col] = val
     })
     return obj
-  }).filter(r => r.week && r.start).map((r, i, arr) => {
+  }).filter(r => r.week && /^\d{4}-\d{2}-\d{2}/.test(r.start)).map((r, i, arr) => {
     // Computed metrics
     // Test Cut Rate = testCuts / applicants * 100 (% of applicants who make it to test cut)
     if (r.testCuts != null && r.applicants != null && r.applicants > 0) {
