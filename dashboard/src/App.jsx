@@ -1,31 +1,24 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import CastleGrid from './components/CastleGrid'
-
-const SHEET_ID = '1_kVI6NZx36g5Mgj-u5eJWauyALfeqTIt8C6ATJ5tUgs'
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`
-
-const COLS = ['week','start','end','cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers','acquisitionRate']
+import useScorecard from './hooks/useScorecard'
 
 const METRICS = {
   cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
   calls:          { name: 'Calls',             icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
   posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
-  mrrDelta:       { name: 'MRR Δ',              icon: '📈', unit: '€±', dir: 'higher', green: 3000, yellow: 1, agg: 'sum', weekOnly: true },
-  mrr:            { name: 'MRR',               icon: '💰', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', quarterOnly: true },
-  margin:         { name: 'Profit Margin',     icon: '✨', unit: '%',  dir: 'higher', green: 50,  yellow: 35, agg: 'avg', quarterOnly: true },
+  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last' },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum' },
   cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
   delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
   applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum' },
-  testCutRate:    { name: 'Cut Rate',          icon: '🎬', unit: '%',  dir: 'higher', green: 15,  yellow: 5, agg: 'avg' },
-  clearanceRate:  { name: 'Clearance',         icon: '✅', unit: '%',  dir: 'higher', green: 50,  yellow: 25, agg: 'avg' },
+  hireRate:       { name: 'Hire Rate',          icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
+  activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
   followers:      { name: 'Followers ±',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg' },
-  acquisitionRate:{ name: 'Acquisition',       icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
 }
 
 const DRI = {
@@ -37,50 +30,14 @@ const DRI = {
 
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
-  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrrDelta', 'mrr', 'margin'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
-  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'testCutRate', 'clearanceRate', 'goodEditors', 'cardsPerEditor'] },
+  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
+  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins'] },
+  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'hireRate', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 
-// Columns that must be numeric (may come as strings from Sheets)
-const NUMERIC_COLS = new Set(['cpl','calls','posts','closeRate','mrr','margin','cardsDone','cardsPerEditor','delivery','wins','applicants','testCuts','testPassed','goodEditors','editorsCount','callBookRate','costPerCall','followers','acquisitionRate'])
-
-function parseSheetData(text) {
-  const json = text.replace(/^[^(]+\(/, '').replace(/\);?$/, '')
-  const data = JSON.parse(json)
-  return data.table.rows.map(row => {
-    const obj = {}
-    COLS.forEach((col, i) => {
-      const cell = row.c?.[i]
-      let val = cell?.v ?? null
-      if (col === 'start' || col === 'end') {
-        val = cell?.f || cell?.v || null
-      } else if (NUMERIC_COLS.has(col) && val !== null) {
-        // Coerce strings like '3' to numbers
-        const n = Number(val)
-        val = isNaN(n) ? null : n
-      }
-      obj[col] = val
-    })
-    return obj
-  }).filter(r => r.week && /^\d{4}-\d{2}-\d{2}/.test(r.start)).map((r, i, arr) => {
-    // Computed metrics
-    // Test Cut Rate = testCuts / applicants * 100 (% of applicants who make it to test cut)
-    if (r.testCuts != null && r.applicants != null && r.applicants > 0) {
-      r.testCutRate = Math.round(r.testCuts / r.applicants * 1000) / 10
-    }
-    // Clearance Rate = testPassed / testCuts this week * 100 (% of test cuts who pass)
-    if (r.testPassed != null && r.testCuts != null && r.testCuts > 0) {
-      r.clearanceRate = Math.round(r.testPassed / r.testCuts * 1000) / 10
-    }
-    // Good Editors = treat 0 as null (not tracked that week)
-    if (r.goodEditors === 0) r.goodEditors = null
-    return r
-  })
-}
 
 // Get month (0-11) and year from a week's start date
 const getMonthYear = (week) => {
@@ -147,7 +104,7 @@ const aggregateToMonths = (weeks, quarter, year) => {
 const padToFour = (items, includeTotal = true) => {
   const weeks = [...items]
   while (weeks.length < 4) {
-    weeks.push({ label: `W${weeks.length + 1}`, empty: true })
+    weeks.push({ label: '—', empty: true })
   }
   
   if (!includeTotal) {
@@ -243,7 +200,7 @@ const MetricRow = ({ metricKey, columns, view }) => {
         {columns.map((col, i) => {
           if (col.empty) {
             return (
-              <div key={col.label || i} className="metric-cell empty-cell">
+              <div key={i} className="metric-cell empty-cell">
                 <span className="metric-value status-text-neutral">—</span>
               </div>
             )
@@ -259,7 +216,7 @@ const MetricRow = ({ metricKey, columns, view }) => {
           const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
           
           return (
-            <div key={col.label || i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+            <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
               {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
             </div>
@@ -284,8 +241,8 @@ const DeptCard = ({ dept, columns, view }) => (
         <div className="time-label-spacer"></div>
         <div className="time-labels">
           {columns.map((col, i) => (
-            <div key={col.label || i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
-              {col.isTotal ? 'Total' : (view === 'month' ? `W${i + 1}` : col.label)}
+            <div key={i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
+              {col.isTotal ? 'Total' : col.label}
             </div>
           ))}
         </div>
@@ -357,51 +314,27 @@ const PeriodSelector = ({ view, month, setMonth, quarter, setQuarter, year, setY
 }
 
 function App() {
-  const [allWeeks, setAllWeeks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
-  const [lastSynced, setLastSynced] = useState(null)
-  const [error, setError] = useState(null)
+  const { data: allWeeks, loading, syncing, lastSynced, error, refresh } = useScorecard()
   const [view, setView] = useState('month') // 'month' or 'quarter'
   const [activeTab, setActiveTab] = useState('scorecard') // 'scorecard' or 'kingdom'
-  
+
   const today = new Date()
   const [month, setMonth] = useState(today.getMonth())
   const [quarter, setQuarter] = useState(Math.floor(today.getMonth() / 3))
   const [year, setYear] = useState(today.getFullYear())
 
-  const load = async (isManual = false) => {
-    if (isManual) setSyncing(true)
-    try {
-      const res = await fetch(SHEET_URL + '&t=' + Date.now())
-      const text = await res.text()
-      const weeks = parseSheetData(text)
-      setAllWeeks(weeks)
-      // Auto-jump to the most recent month that has data
-      if (weeks.length > 0) {
-        const last = weeks[weeks.length - 1]
-        const { month: lm, year: ly } = getMonthYear(last)
-        if (lm >= 0) {
-          setMonth(lm)
-          setYear(ly)
-          setQuarter(Math.floor(lm / 3))
-        }
-      }
-      setLastSynced(new Date())
-      setLoading(false)
-    } catch (e) {
-      setError(e.message)
-      setLoading(false)
-    } finally {
-      if (isManual) setSyncing(false)
+  // Auto-jump to the most recent month that has data (once)
+  const hasAutoJumped = useRef(false)
+  if (!hasAutoJumped.current && allWeeks.length > 0) {
+    const last = allWeeks[allWeeks.length - 1]
+    const { month: lm, year: ly } = getMonthYear(last)
+    if (lm >= 0) {
+      setMonth(lm)
+      setYear(ly)
+      setQuarter(Math.floor(lm / 3))
     }
+    hasAutoJumped.current = true
   }
-
-  useEffect(() => {
-    load()
-    const iv = setInterval(() => load(), 5 * 60 * 1000)
-    return () => clearInterval(iv)
-  }, [])
 
   // Get available years from data
   const availableYears = useMemo(() => {
@@ -438,11 +371,11 @@ function App() {
         // Only mark as current if today falls within this specific week
         const todayNoon = new Date(today); todayNoon.setHours(12, 0, 0, 0)
         const isCurrent = startDate && endDate && todayNoon >= startDate && todayNoon <= endDate
-        return { ...w, mrrDelta, label: `W${i + 1}`, isCurrent }
+        return { ...w, mrrDelta, label: w.week ? `KW${w.week}` : `W${i + 1}`, isCurrent }
       })
       return padToFour(withDelta)
     } else {
-      return aggregateToMonths(allWeeks, quarter, year)
+      return padToFour(aggregateToMonths(allWeeks, quarter, year))
     }
   }, [allWeeks, view, month, quarter, year])
 
@@ -524,7 +457,7 @@ function App() {
           <HealthSummary columns={columns} />
           <button
             className={`sync-btn ${syncing ? 'syncing' : ''}`}
-            onClick={() => load(true)}
+            onClick={refresh}
             title={lastSynced ? `Last synced: ${lastSynced.toLocaleTimeString()}` : 'Sync now'}
           >
             {syncing ? '⟳' : '↻'}
@@ -537,9 +470,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        Live from Google Sheets · Auto-refreshes every 5 min
-        <br />
-        <a href={`https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`} target="_blank" rel="noopener noreferrer">Edit Sheet →</a>
+        Live from Teable · Auto-refreshes every 5 min
       </footer>
     </div>
   )
