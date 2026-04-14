@@ -9,7 +9,7 @@ const DIRECT_FIELDS = [
   'start', 'end',
   'calls', 'posts', 'followers',
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
-  'cardsDone', 'delivery', 'wins', 'hireRate',
+  'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
 ]
 
@@ -17,7 +17,7 @@ const DIRECT_FIELDS = [
 const RENAMED_FIELDS = { clientCpl: 'cpl' }
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages
-const RATIO_TO_PCT = new Set(['callBookRate', 'closeRate', 'hireRate'])
+const RATIO_TO_PCT = new Set(['callBookRate', 'closeRate'])
 
 const DATE_FIELDS = new Set(['start', 'end'])
 
@@ -75,6 +75,10 @@ function postProcess(rows) {
   return rows.map(r => {
     // Treat goodEditors = 0 as null (not tracked that week)
     if (r.goodEditors === 0) r.goodEditors = null
+    // Derive acquisitionRate as "newSubs/testStarts" fraction string
+    const ns = r.newSubs ?? 0
+    const ts = r.testStarts ?? 0
+    r.acquisitionRate = `${ns}/${ts}`
     return r
   })
 }

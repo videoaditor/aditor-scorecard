@@ -3,22 +3,23 @@ import CastleGrid from './components/CastleGrid'
 import useScorecard from './hooks/useScorecard'
 
 const METRICS = {
-  cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg' },
-  calls:          { name: 'Calls',             icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
-  posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum' },
-  closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg' },
-  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last' },
-  cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum' },
-  cardsPerEditor: { name: 'Cards / Editor',    icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg' },
-  delivery:       { name: 'Delivery Time',     icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg' },
-  wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum' },
-  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum' },
-  hireRate:       { name: 'Hire Rate',          icon: '🎯', unit: '%',  dir: 'higher', green: 60,  yellow: 30, agg: 'avg' },
-  activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last' },
-  goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last' },
-  followers:      { name: 'Followers ±',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 20, agg: 'sum' },
-  callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg' },
-  costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg' },
+  cpl:            { name: 'CPL (Qualified)',   icon: '💰', unit: '€',  dir: 'lower',  green: 80,  yellow: 150, agg: 'avg', desc: 'Cost per qualified lead from Meta Ads' },
+  calls:          { name: 'Calls',             icon: '📞', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum', desc: 'Sales calls booked via Calendly' },
+  posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum', desc: 'Instagram posts from Meta API' },
+  closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg', desc: '% of calls that convert to paying clients' },
+  mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', desc: 'Monthly recurring revenue from Stripe' },
+  cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum', desc: 'Total cards completed derived from Trello' },
+  cardsPerEditor: { name: 'Cards/Editor',        icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg', desc: 'Average cards completed per editor' },
+  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', desc: 'Avg. delivery time active \u2192 completed in hours' },
+  wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum', desc: 'Client wins from Slack #wins channel' },
+  applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum', desc: 'Editor applicants from email' },
+  newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
+  activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last', desc: 'Editors that completed at least 1 card last week' },
+  goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last', desc: 'Editors that completed at least 3 cards last week' },
+  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 20, agg: 'sum', desc: 'Instagram follower change from Meta API' },
+  callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
+  costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
+  acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
 }
 
 const DRI = {
@@ -31,8 +32,8 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
   { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins'] },
-  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'hireRate', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
+  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -46,11 +47,15 @@ const getMonthYear = (week) => {
   return { month: d.getMonth(), year: d.getFullYear() }
 }
 
-// Filter weeks by month
+// Filter weeks that overlap with the given month (start ≤ month-end AND end ≥ month-start)
 const filterByMonth = (weeks, month, year) => {
+  const monthStart = new Date(year, month, 1)
+  const monthEnd = new Date(year, month + 1, 0) // last day of month
   return weeks.filter(w => {
-    const my = getMonthYear(w)
-    return my.month === month && my.year === year
+    if (!w.start || !w.end) return false
+    const wStart = new Date(w.start)
+    const wEnd = new Date(w.end)
+    return wStart <= monthEnd && wEnd >= monthStart
   })
 }
 
@@ -81,7 +86,12 @@ const aggregateToMonths = (weeks, quarter, year) => {
       Object.keys(METRICS).forEach(key => {
         const m = METRICS[key]
         const vals = monthWeeks.map(w => w[key]).filter(v => v !== null && v !== undefined)
-        if (vals.length === 0) {
+        if (m.agg === 'frac') {
+          // Sum numerator/denominator parts across weeks
+          let num = 0, den = 0
+          vals.forEach(v => { const [n, d] = String(v).split('/').map(Number); num += (n||0); den += (d||0) })
+          agg[key] = `${num}/${den}`
+        } else if (vals.length === 0) {
           agg[key] = null
         } else if (m.agg === 'sum') {
           agg[key] = vals.reduce((a, b) => a + b, 0)
@@ -100,36 +110,33 @@ const aggregateToMonths = (weeks, quarter, year) => {
   return monthlyData
 }
 
-// Pad weeks to 4 + optionally add monthly total column
-const padToFour = (items, includeTotal = true) => {
-  const weeks = [...items]
-  while (weeks.length < 4) {
-    weeks.push({ label: '—', empty: true })
-  }
-  
-  if (!includeTotal) {
-    return weeks.slice(0, 4)
-  }
-  
-  const filled = weeks.filter(w => !w.empty).slice(0, 4)
-  
-  // Calculate monthly total/average
+// Add a Total/Summary column to an array of columns
+const addTotalColumn = (columns) => {
+  const filled = columns.filter(w => !w.empty)
+
   const total = { label: 'Total', empty: false, isTotal: true, isCurrent: false }
   Object.keys(METRICS).forEach(key => {
     const m = METRICS[key]
-    const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined && !isNaN(Number(v)))
-    if (vals.length === 0) {
-      total[key] = null
-    } else if (m.agg === 'sum' || m.unit === '€±' || m.unit === '±') {
-      total[key] = vals.reduce((a, b) => Number(a) + Number(b), 0)
-    } else if (m.agg === 'avg') {
-      total[key] = Math.round(vals.reduce((a, b) => Number(a) + Number(b), 0) / vals.length * 10) / 10
-    } else if (m.agg === 'last') {
-      total[key] = vals[vals.length - 1]
+    if (m.agg === 'frac') {
+      const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined)
+      let num = 0, den = 0
+      vals.forEach(v => { const [n, d] = String(v).split('/').map(Number); num += (n||0); den += (d||0) })
+      total[key] = vals.length === 0 ? null : `${num}/${den}`
+    } else {
+      const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined && !isNaN(Number(v)))
+      if (vals.length === 0) {
+        total[key] = null
+      } else if (m.agg === 'sum') {
+        total[key] = vals.reduce((a, b) => Number(a) + Number(b), 0)
+      } else if (m.agg === 'avg') {
+        total[key] = Math.round(vals.reduce((a, b) => Number(a) + Number(b), 0) / vals.length * 10) / 10
+      } else if (m.agg === 'last') {
+        total[key] = vals[vals.length - 1]
+      }
     }
   })
-  
-  return [...weeks.slice(0, 4), total]
+
+  return [...columns, total]
 }
 
 // weekCount: how many weeks contributed to this value (for scaling sum thresholds)
@@ -137,6 +144,13 @@ const getStatus = (value, key, weekCount = 1) => {
   if (value === null || value === undefined) return 'neutral'
   const m = METRICS[key]
   if (!m) return 'neutral'
+  // For fraction metrics, derive percentage from "num/den"
+  if (m.agg === 'frac') {
+    const [n, d] = String(value).split('/').map(Number)
+    if (!d) return 'neutral'
+    const pct = (n / d) * 100
+    return pct >= m.green ? 'green' : pct >= m.yellow ? 'yellow' : 'red'
+  }
   // Scale thresholds for sum metrics when showing totals across multiple weeks
   const scale = (m.agg === 'sum') ? weekCount : 1
   if (m.dir === 'higher') {
@@ -154,6 +168,7 @@ const fmt = (val, key) => {
   if (val === null || val === undefined) return '—'
   const m = METRICS[key]
   if (!m) return String(val)
+  if (m.unit === 'frac') return String(val)
   if (m.unit === '%') return `${val}%`
   if (m.unit === '±') {
     const sign = val >= 0 ? '+' : ''
@@ -192,7 +207,7 @@ const MetricRow = ({ metricKey, columns, view }) => {
   
   return (
     <div className="metric-row">
-      <div className="metric-label">
+      <div className="metric-label" data-tooltip={m.desc}>
         <span className="metric-icon">{m.icon}</span>
         <span className="metric-name">{m.name}</span>
       </div>
@@ -217,7 +232,6 @@ const MetricRow = ({ metricKey, columns, view }) => {
           
           return (
             <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
-              {!isCurrent && <StatusDot status={status} />}
               <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
             </div>
           )
@@ -347,35 +361,38 @@ function App() {
   const columns = useMemo(() => {
     if (view === 'month') {
       const filtered = filterByMonth(allWeeks, month, year)
-      // Calculate MRR delta for each week
-      const withDelta = filtered.map((w, i) => {
-        let mrrDelta = 0
-        if (w.mrr !== null && w.mrr !== undefined) {
-          if (i > 0 && filtered[i-1].mrr !== null) {
-            mrrDelta = w.mrr - filtered[i-1].mrr
-          } else {
-            // First week of month: check previous month's last week
-            const prevWeeks = allWeeks.filter(pw => {
-              const d = new Date(pw.start)
-              return d < new Date(w.start) && pw.mrr !== null
-            })
-            if (prevWeeks.length > 0) {
-              mrrDelta = w.mrr - prevWeeks[prevWeeks.length - 1].mrr
-            }
-          }
-        }
+
+      // Process each week: add labels + current-week detection
+      const processed = filtered.map((w) => {
         const startDate = w.start ? new Date(w.start) : null
         const endDate = w.end ? new Date(w.end) : null
         if (startDate) startDate.setHours(0, 0, 0, 0)
         if (endDate) endDate.setHours(23, 59, 59, 999)
-        // Only mark as current if today falls within this specific week
         const todayNoon = new Date(today); todayNoon.setHours(12, 0, 0, 0)
         const isCurrent = startDate && endDate && todayNoon >= startDate && todayNoon <= endDate
-        return { ...w, mrrDelta, label: w.week ? `KW${w.week}` : `W${i + 1}`, isCurrent }
+        return { ...w, label: w.week ? `KW${w.week}` : '—', isCurrent }
       })
-      return padToFour(withDelta)
+
+      // Create positional slots: weeks placed at their week-of-month position
+      const daysInMonth = new Date(year, month + 1, 0).getDate()
+      const maxWeeks = Math.ceil(daysInMonth / 7)
+      const slots = Array.from({ length: maxWeeks }, () => ({ label: '—', empty: true }))
+
+      processed.forEach(w => {
+        const startDate = new Date(w.start)
+        const monthStart = new Date(year, month, 1)
+        // For cross-month weeks (started in previous month), place at slot 0
+        const effectiveDay = startDate < monthStart ? 1 : startDate.getDate()
+        const pos = Math.ceil(effectiveDay / 7) - 1
+        if (pos >= 0 && pos < maxWeeks) slots[pos] = w
+      })
+
+      // Only show 5th week column if it has data
+      if (slots.length > 4 && slots[4].empty) slots.pop()
+
+      return addTotalColumn(slots)
     } else {
-      return padToFour(aggregateToMonths(allWeeks, quarter, year))
+      return addTotalColumn(aggregateToMonths(allWeeks, quarter, year))
     }
   }, [allWeeks, view, month, quarter, year])
 
@@ -470,7 +487,9 @@ function App() {
       </main>
 
       <footer className="footer">
-        Live from Teable · Auto-refreshes every 5 min
+        Sourced from Teable
+        <br />
+        <a href="https://app.teable.ai/base/bsedpj9rQtsQFsPC3xm/table/tbl7295480347s6oVaI/viwjRZfQ2vqmYKy3tnE" target="_blank" rel="noopener noreferrer">Open in Teable</a>
       </footer>
     </div>
   )

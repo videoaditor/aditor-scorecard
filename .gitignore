@@ -1,7 +1,7 @@
 node_modules/
 dashboard/node_modules/
 dashboard/dist/
-.env
+**/.env
 *.log
 .devcontainer/
 new-client.sh

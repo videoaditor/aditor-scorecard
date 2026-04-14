@@ -587,6 +587,7 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
+  padding: 0 10px;
 }
 
 .time-label-spacer {
@@ -597,7 +598,7 @@ body {
 
 .time-labels {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .time-label {
@@ -644,7 +645,29 @@ body {
   width: 140px;
   min-width: 140px;
   max-width: 140px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+  cursor: default;
+}
+
+.metric-label[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #1a1a24;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  pointer-events: none;
 }
 
 .metric-icon {
