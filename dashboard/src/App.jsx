@@ -373,22 +373,33 @@ function App() {
         return { ...w, label: w.week ? `KW${w.week}` : '—', isCurrent }
       })
 
-      // Create positional slots: weeks placed at their week-of-month position
-      const daysInMonth = new Date(year, month + 1, 0).getDate()
-      const maxWeeks = Math.ceil(daysInMonth / 7)
-      const slots = Array.from({ length: maxWeeks }, () => ({ label: '—', empty: true }))
+      // Place weeks by their week number relative to the first week of the month
+      const firstWeek = processed.length > 0
+        ? Math.min(...processed.map(w => w.week))
+        : null
+      // Figure out how many ISO weeks overlap this month
+      const getISOWeek = (d) => {
+        const date = new Date(d); date.setHours(0, 0, 0, 0)
+        date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7))
+        const week1 = new Date(date.getFullYear(), 0, 4)
+        return 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+      }
+      const monthFirstWeek = getISOWeek(new Date(year, month, 1))
+      const monthLastWeek = getISOWeek(new Date(year, month + 1, 0))
+      const totalSlots = monthLastWeek >= monthFirstWeek
+        ? monthLastWeek - monthFirstWeek + 1
+        : monthLastWeek + 52 - monthFirstWeek + 1 // year boundary
+      const baseWeek = firstWeek != null ? Math.min(firstWeek, monthFirstWeek) : monthFirstWeek
+      const slotCount = Math.max(totalSlots, processed.length > 0 ? Math.max(...processed.map(w => w.week)) - baseWeek + 1 : 0)
+      const slots = Array.from({ length: slotCount }, () => ({ label: '—', empty: true }))
 
       processed.forEach(w => {
-        const startDate = new Date(w.start)
-        const monthStart = new Date(year, month, 1)
-        // For cross-month weeks (started in previous month), place at slot 0
-        const effectiveDay = startDate < monthStart ? 1 : startDate.getDate()
-        const pos = Math.ceil(effectiveDay / 7) - 1
-        if (pos >= 0 && pos < maxWeeks) slots[pos] = w
+        const pos = w.week - baseWeek
+        if (pos >= 0 && pos < slots.length) slots[pos] = w
       })
 
-      // Only show 5th week column if it has data
-      if (slots.length > 4 && slots[4].empty) slots.pop()
+      // Only show 5th+ slot if it has data
+      while (slots.length > 4 && slots[slots.length - 1].empty) slots.pop()
 
       return addTotalColumn(slots)
     } else {
