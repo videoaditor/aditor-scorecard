@@ -1,0 +1,37 @@
+{
+  "allEditors": [
+    {
+      "id": "recEditorAlfredo",
+      "name": "Alfredo Rossi",
+      "sprite": "alfredo",
+      "rank": "Stage 3",
+      "trustScore": 90,
+      "trelloCards": 42,
+      "kappa": "open",
+      "hasAssignment": false,
+      "brands": []
+    },
+    {
+      "id": "recEditorBao",
+      "name": "Bao Nguyen",
+      "sprite": "bao",
+      "rank": "Stage 2",
+      "trustScore": 60,
+      "trelloCards": 20,
+      "kappa": "busy",
+      "hasAssignment": true,
+      "brands": ["Sunspire"]
+    }
+  ],
+  "editors": {
+    "Sunspire": [
+      { "id": "recEditorBao", "name": "Bao Nguyen", "sprite": "bao", "rank": "Stage 2" }
+    ]
+  },
+  "brandRecordIds": {
+    "brdBurning001": "recBrandEmber",
+    "brdNeutral002": "recBrandNeutral",
+    "brdThriving003": "recBrandSun",
+    "brdPassive004": "recBrandDormant"
+  }
+}

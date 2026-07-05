@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "url": "https://gen.aditor.ai/api/brand-health/action",
+  "body": {
+    "action": "push_propaganda",
+    "brand": "Ember Forge",
+    "brandBoard": "brdBurning001",
+    "params": {
+      "count": 5
+    }
+  }
+}

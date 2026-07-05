@@ -1,0 +1,142 @@
+{
+  "records": [
+    {
+      "id": "rec0000000000KW05",
+      "fields": {
+        "week": "KW05",
+        "start": "2026-01-26T12:00:00.000Z",
+        "end": "2026-02-01T12:00:00.000Z",
+        "calls": 4,
+        "posts": 5,
+        "followers": 40,
+        "callBookRate": 0.15,
+        "costPerCall": 220,
+        "closeRate": 0.28,
+        "mrr": 41000,
+        "cardsDone": 32,
+        "delivery": 55,
+        "wins": 3,
+        "newHires": 1,
+        "testStarts": 8,
+        "newSubs": 4,
+        "applicants": 30,
+        "goodEditors": 5,
+        "activeEditors": 12,
+        "cardsPerEditor": 7,
+        "clientCpl": 95
+      }
+    },
+    {
+      "id": "rec0000000000KW06",
+      "fields": {
+        "week": "KW06",
+        "start": "2026-02-02T12:00:00.000Z",
+        "end": "2026-02-08T12:00:00.000Z",
+        "calls": 6,
+        "posts": 6,
+        "followers": 120,
+        "callBookRate": 0.22,
+        "costPerCall": 180,
+        "closeRate": 0.36,
+        "mrr": 43000,
+        "cardsDone": 44,
+        "delivery": 47,
+        "wins": 5,
+        "newHires": 2,
+        "testStarts": 10,
+        "newSubs": 6,
+        "applicants": 52,
+        "goodEditors": 0,
+        "activeEditors": 15,
+        "cardsPerEditor": 9,
+        "clientCpl": 78
+      }
+    },
+    {
+      "id": "rec0000000000KW07",
+      "fields": {
+        "week": "KW07",
+        "start": "2026-02-09T12:00:00.000Z",
+        "end": "2026-02-15T12:00:00.000Z",
+        "calls": 3,
+        "posts": 4,
+        "followers": 60,
+        "callBookRate": 0.18,
+        "costPerCall": 210,
+        "closeRate": 0.30,
+        "mrr": 44000,
+        "cardsDone": 20,
+        "delivery": 60,
+        "wins": 2,
+        "newHires": 0,
+        "testStarts": 6,
+        "newSubs": 3,
+        "applicants": 28,
+        "goodEditors": 4,
+        "activeEditors": 13,
+        "cardsPerEditor": 6,
+        "clientCpl": 88
+      }
+    },
+    {
+      "id": "rec0000000000KW08",
+      "fields": {
+        "week": "KW08",
+        "start": "2026-02-16T12:00:00.000Z",
+        "end": "2026-02-22T12:00:00.000Z",
+        "calls": 7,
+        "posts": 7,
+        "followers": 150,
+        "callBookRate": 0.25,
+        "costPerCall": 160,
+        "closeRate": 0.40,
+        "mrr": 45500,
+        "cardsDone": 48,
+        "delivery": 44,
+        "wins": 6,
+        "newHires": 3,
+        "testStarts": 12,
+        "newSubs": 8,
+        "applicants": 60,
+        "goodEditors": 7,
+        "activeEditors": 16,
+        "cardsPerEditor": 10,
+        "clientCpl": 72
+      }
+    },
+    {
+      "id": "rec0000000000KW09",
+      "fields": {
+        "week": "KW09",
+        "start": "2026-02-23T12:00:00.000Z",
+        "end": "2026-03-01T12:00:00.000Z",
+        "calls": 5,
+        "posts": 6,
+        "followers": 90,
+        "callBookRate": 0.20,
+        "costPerCall": 190,
+        "closeRate": 0.33,
+        "mrr": 46000,
+        "cardsDone": 40,
+        "delivery": 50,
+        "wins": 4,
+        "newHires": 2,
+        "testStarts": 9,
+        "newSubs": 5,
+        "applicants": 45,
+        "goodEditors": 6,
+        "activeEditors": 15,
+        "cardsPerEditor": 8,
+        "clientCpl": 80
+      }
+    },
+    {
+      "id": "rec00000000GARBAGE",
+      "fields": {
+        "calls": 999,
+        "mrr": 999999,
+        "note": "no week and no start - must be filtered out by useScorecard.js:105"
+      }
+    }
+  ]
+}
