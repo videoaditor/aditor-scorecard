@@ -1,0 +1,15 @@
+# no-mistakes per-repo gate config for aditor-scorecard.
+#
+# Single deterministic test command (explicit - never auto-detection). The E2E suite is
+# the only reviewer for this repo (ships straight to master, no PR), so the build IS the
+# first test and the Playwright browser session IS the primary test. See AGENTS.md > Tests.
+#
+#   npm ci                            - deterministic install from package-lock.json
+#   npx playwright install chromium   - hermetic browser (no dependency on a system Chrome)
+#   npm run build -- --mode test      - "the build is the first test"; bakes .env.test
+#   npm run test:e2e                  - Playwright boots `vite preview` and runs the specs
+#
+# lint is deliberately excluded: it is currently broken (no eslint.config.js; ESLint 9
+# requires one) and is not part of the baseline. See AGENTS.md > Known facts.
+commands:
+  test: cd dashboard && npm ci && npx playwright install chromium && npm run build -- --mode test && npm run test:e2e

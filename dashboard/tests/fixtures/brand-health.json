@@ -1,0 +1,96 @@
+{
+  "cached": false,
+  "cacheAge": 0,
+  "computeMs": 12,
+  "brands": [
+    {
+      "boardId": "brdBurning001",
+      "name": "Ember Forge",
+      "state": "burning",
+      "isBuilding": false,
+      "subscription": "active",
+      "weeklyTarget": 8,
+      "hasWinningComponents": false,
+      "health": 22,
+      "metrics": {
+        "deliveryVsTarget": { "score": 20, "weight": "30%", "label": "3 of 8 delivered", "delivered": 3 },
+        "deliveryRhythm": { "score": 25, "weight": "15%", "label": "irregular cadence" },
+        "queueDepth": { "score": 40, "weight": "15%", "label": "1 in queue", "count": 1 },
+        "activeWork": { "score": 30, "weight": "15%", "label": "0 active", "count": 0 },
+        "sentiment": { "score": 50, "weight": "15%", "label": "neutral" },
+        "freshness": { "score": 35, "weight": "10%", "label": "updated 2d ago" }
+      },
+      "alerts": [
+        { "severity": "warning", "message": "Delivery behind weekly target" }
+      ],
+      "recentActivity": [
+        { "card": "Reel: Hook test v3", "from": "Queue", "to": "In Progress" },
+        { "card": "Ad script batch", "from": "Backlog", "to": "Queue" }
+      ]
+    },
+    {
+      "boardId": "brdNeutral002",
+      "name": "Neutral Keep",
+      "state": "neutral",
+      "isBuilding": false,
+      "subscription": "active",
+      "weeklyTarget": 5,
+      "hasWinningComponents": true,
+      "health": 55,
+      "metrics": {
+        "deliveryVsTarget": { "score": 55, "weight": "30%", "label": "3 of 5 delivered", "delivered": 3 },
+        "deliveryRhythm": { "score": 60, "weight": "15%", "label": "steady" },
+        "queueDepth": { "score": 70, "weight": "15%", "label": "4 in queue", "count": 4 },
+        "activeWork": { "score": 50, "weight": "15%", "label": "2 active", "count": 2 },
+        "sentiment": { "score": 65, "weight": "15%", "label": "positive" },
+        "freshness": { "score": 60, "weight": "10%", "label": "updated today" }
+      },
+      "alerts": [],
+      "recentActivity": [
+        { "card": "UGC batch review", "from": "In Progress", "to": "Done" }
+      ]
+    },
+    {
+      "boardId": "brdThriving003",
+      "name": "Sunspire",
+      "state": "thriving",
+      "isBuilding": false,
+      "subscription": "active",
+      "weeklyTarget": 6,
+      "hasWinningComponents": false,
+      "health": 82,
+      "metrics": {
+        "deliveryVsTarget": { "score": 90, "weight": "30%", "label": "6 of 6 delivered", "delivered": 6 },
+        "deliveryRhythm": { "score": 85, "weight": "15%", "label": "consistent" },
+        "queueDepth": { "score": 75, "weight": "15%", "label": "5 in queue", "count": 5 },
+        "activeWork": { "score": 80, "weight": "15%", "label": "3 active", "count": 3 },
+        "sentiment": { "score": 88, "weight": "15%", "label": "strong" },
+        "freshness": { "score": 90, "weight": "10%", "label": "updated today" }
+      },
+      "alerts": [],
+      "recentActivity": [
+        { "card": "Winning angle iteration", "from": "Queue", "to": "In Progress" }
+      ]
+    },
+    {
+      "boardId": "brdPassive004",
+      "name": "Dormant Hold",
+      "state": "neutral",
+      "isBuilding": false,
+      "subscription": "passive",
+      "weeklyTarget": 3,
+      "hasWinningComponents": false,
+      "health": 40,
+      "metrics": {
+        "deliveryVsTarget": { "score": 45, "weight": "30%", "label": "1 of 3 delivered", "delivered": 1 },
+        "deliveryRhythm": { "score": 40, "weight": "15%", "label": "slow" },
+        "queueDepth": { "score": 30, "weight": "15%", "label": "0 in queue", "count": 0 },
+        "activeWork": { "score": 35, "weight": "15%", "label": "1 active", "count": 1 },
+        "sentiment": { "score": 50, "weight": "15%", "label": "neutral" },
+        "freshness": { "score": 40, "weight": "10%", "label": "updated 5d ago" }
+      },
+      "alerts": [],
+      "recentActivity": []
+    }
+  ]
+}

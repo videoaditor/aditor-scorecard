@@ -6,3 +6,10 @@ dashboard/dist/
 .devcontainer/
 new-client.sh
 README.md
+
+# Playwright E2E run artifacts (transient; no-mistakes copies evidence into
+# .no-mistakes/evidence/<branch>/ separately). .env.test is intentionally NOT
+# ignored - it holds only non-secret placeholders and must be committed.
+dashboard/test-results/
+dashboard/playwright-report/
+dashboard/playwright/.cache/
