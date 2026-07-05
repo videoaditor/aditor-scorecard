@@ -1,0 +1,8 @@
+{
+  "method": "PATCH",
+  "url": "https://gen.aditor.ai/api/brand-health/assign-editor",
+  "body": {
+    "brandRecordId": "recBrandEmber",
+    "editorRecordId": "recEditorAlfredo"
+  }
+}
