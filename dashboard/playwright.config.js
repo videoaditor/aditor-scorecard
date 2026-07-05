@@ -13,7 +13,7 @@ import { defineConfig, devices } from '@playwright/test'
  *  - timezoneId is pinned to Europe/Berlin to match useScorecard's toLocalDate,
  *    so date math (current-week, month/quarter defaults) is machine-independent.
  *  - Each spec pins page.clock before navigating (fixtures are aligned to Feb 2026).
- *  - retries: 0 - a gate-blocking T1 test must not flake-pass on a retry.
+ *  - retries: 0 - the smoke gate must not flake-pass on a retry.
  */
 export default defineConfig({
   testDir: './tests',

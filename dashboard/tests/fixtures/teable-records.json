@@ -9,6 +9,8 @@
         "calls": 4,
         "posts": 5,
         "followers": 40,
+        "impressions": 12000,
+        "hotDmInquiries": 3,
         "callBookRate": 0.15,
         "costPerCall": 220,
         "closeRate": 0.28,
@@ -23,7 +25,10 @@
         "goodEditors": 5,
         "activeEditors": 12,
         "cardsPerEditor": 7,
-        "clientCpl": 95
+        "clientCpl": 95,
+        "autoTurnaround": 2,
+        "autoIncident": 10,
+        "autoErrorRate": 1
       }
     },
     {
@@ -35,6 +40,8 @@
         "calls": 6,
         "posts": 6,
         "followers": 120,
+        "impressions": 18000,
+        "hotDmInquiries": 5,
         "callBookRate": 0.22,
         "costPerCall": 180,
         "closeRate": 0.36,
@@ -49,7 +56,10 @@
         "goodEditors": 0,
         "activeEditors": 15,
         "cardsPerEditor": 9,
-        "clientCpl": 78
+        "clientCpl": 78,
+        "autoTurnaround": 5,
+        "autoIncident": 20,
+        "autoErrorRate": 2
       }
     },
     {
@@ -61,6 +71,8 @@
         "calls": 3,
         "posts": 4,
         "followers": 60,
+        "impressions": 9000,
+        "hotDmInquiries": 2,
         "callBookRate": 0.18,
         "costPerCall": 210,
         "closeRate": 0.30,
@@ -75,7 +87,10 @@
         "goodEditors": 4,
         "activeEditors": 13,
         "cardsPerEditor": 6,
-        "clientCpl": 88
+        "clientCpl": 88,
+        "autoTurnaround": 4,
+        "autoIncident": 15,
+        "autoErrorRate": 2
       }
     },
     {
@@ -87,6 +102,8 @@
         "calls": 7,
         "posts": 7,
         "followers": 150,
+        "impressions": 22000,
+        "hotDmInquiries": 7,
         "callBookRate": 0.25,
         "costPerCall": 160,
         "closeRate": 0.40,
@@ -101,7 +118,10 @@
         "goodEditors": 7,
         "activeEditors": 16,
         "cardsPerEditor": 10,
-        "clientCpl": 72
+        "clientCpl": 72,
+        "autoTurnaround": 8,
+        "autoIncident": 30,
+        "autoErrorRate": 5
       }
     },
     {
@@ -113,6 +133,8 @@
         "calls": 5,
         "posts": 6,
         "followers": 90,
+        "impressions": 15000,
+        "hotDmInquiries": 4,
         "callBookRate": 0.20,
         "costPerCall": 190,
         "closeRate": 0.33,
@@ -127,7 +149,10 @@
         "goodEditors": 6,
         "activeEditors": 15,
         "cardsPerEditor": 8,
-        "clientCpl": 80
+        "clientCpl": 80,
+        "autoTurnaround": 3,
+        "autoIncident": 12,
+        "autoErrorRate": 1
       }
     },
     {
@@ -135,7 +160,7 @@
       "fields": {
         "calls": 999,
         "mrr": 999999,
-        "note": "no week and no start - must be filtered out by useScorecard.js:105"
+        "note": "no week and no start - must be filtered out by useScorecard.js:110"
       }
     }
   ]

@@ -4,13 +4,18 @@ const TEABLE_URL = import.meta.env.VITE_TEABLE_URL || ''
 const TEABLE_TOKEN = import.meta.env.VITE_TEABLE_TOKEN || ''
 const TABLE_ID = import.meta.env.VITE_TEABLE_TABLE_ID || ''
 
-// Direct field mappings: Teable field name === internal key
+// Direct field mappings: Teable field name === internal key.
+// Fields absent in Teable map to null (toNum), so the dashboard renders them as a
+// neutral placeholder instead of crashing - this is what keeps the pending metrics
+// (impressions, hotDmInquiries, autoTurnaround, autoIncident, autoErrorRate) safe to
+// ship before their Teable schema fields land. See AGENTS.md > Deferred Teable fields.
 const DIRECT_FIELDS = [
   'start', 'end',
-  'calls', 'posts', 'followers',
+  'calls', 'posts', 'followers', 'impressions', 'hotDmInquiries',
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
+  'autoTurnaround', 'autoIncident', 'autoErrorRate',
 ]
 
 // Renamed mappings: Teable field → internal key

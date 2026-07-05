@@ -2,13 +2,26 @@ import { test, expect } from '@playwright/test'
 import { installMockBackend, gotoPinned } from './fixtures/mockBackend.js'
 
 /**
- * smoke.spec.js - the build+smoke floor for the non-T1 display surface (report section 4, Test C).
- * Not gate-blocking behavior itself, but this is where the app is proven to boot from the built
- * bundle, render both tabs off the mocked boundaries, and stay free of console/page errors.
- * It is also where any §2 date/aggregation display bug gets pinned as a regression when found.
+ * smoke.spec.js - the build + display floor for the read-only dashboard.
+ *
+ * Since the Brands/Kingdom tab was removed (2026-07), the app has no money/auth/mutation/
+ * outbound surface: it is entirely a read-only render of the mocked Teable feed. This spec
+ * is therefore the whole gate. It proves the app boots from the BUILT bundle, renders the
+ * five department cards off the single mocked boundary, stays free of console/page errors,
+ * and encodes the milestone structure (moved CPL/Calls, Tobias's Marketing metrics, the new
+ * centered Automation department with green/yellow/red threshold coloring, no Brands tab).
+ * It is also where any date/aggregation display bug gets pinned as a regression when found.
  */
-test.describe('smoke - build + display floor (non-T1)', () => {
-  test('Scorecard tab renders the KPI grid from mocked Teable', async ({ page }, testInfo) => {
+
+// A department card located by its visible name (department names are all distinct).
+const deptCard = (page, name) =>
+  page.locator('.dept-card').filter({ has: page.locator('.dept-name', { hasText: name }) })
+
+// The metric-name labels rendered inside one department card.
+const metricNames = (page, dept) => deptCard(page, dept).locator('.metric-name')
+
+test.describe('smoke - build + display floor', () => {
+  test('Scorecard renders the five department cards from mocked Teable', async ({ page }, testInfo) => {
     const consoleErrors = []
     page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
     const pageErrors = []
@@ -17,11 +30,13 @@ test.describe('smoke - build + display floor (non-T1)', () => {
     const transcript = await installMockBackend(page)
     await gotoPinned(page, '/')
 
-    // Default tab is Scorecard: the four department cards render from the mocked Teable feed.
-    await expect(page.locator('.dept-card')).toHaveCount(4)
-    await expect(page.locator('.dept-name')).toHaveText(['Marketing', 'Sales', 'Customer Success', 'People'])
+    // Five department cards render, in order, from the mocked Teable feed.
+    await expect(page.locator('.dept-card')).toHaveCount(5)
+    await expect(page.locator('.dept-name')).toHaveText(
+      ['Marketing', 'Sales', 'Customer Success', 'People', 'Automation']
+    )
 
-    // Data actually flowed through the mapping: at least one metric cell shows a numeric value.
+    // Data actually flowed through the mapping: at least one metric cell shows a number.
     const numericValues = await page.locator('.metric-value').filter({ hasText: /\d/ }).count()
     expect(numericValues).toBeGreaterThan(0)
 
@@ -37,28 +52,63 @@ test.describe('smoke - build + display floor (non-T1)', () => {
     expect(consoleErrors).toEqual([])
   })
 
-  test('Brands tab renders castles + health summary from mocked backend', async ({ page }, testInfo) => {
-    const consoleErrors = []
-    page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
-    const pageErrors = []
-    page.on('pageerror', (err) => pageErrors.push(err.message))
-
+  test('Brands tab is fully removed', async ({ page }) => {
     const transcript = await installMockBackend(page)
     await gotoPinned(page, '/')
 
-    await page.getByRole('button', { name: 'Brands' }).click()
-
-    // All four fixture brands render as castles; the health summary bar is present.
-    await expect(page.locator('.castle-card')).toHaveCount(4)
-    await expect(page.locator('.brand-summary-bar')).toBeVisible()
-    await expect(page.locator('.castle-card').filter({ hasText: 'Ember Forge' })).toBeVisible()
-
-    expect(transcript.healthFetches).toBeGreaterThan(0)
-    expect(transcript.editorsFetches).toBeGreaterThan(0)
+    await expect(page.locator('.dept-card').first()).toBeVisible()
+    // No tab navigation, no Brands button, and none of the castle-tab DOM survive.
+    await expect(page.locator('.tab-navigation')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Brands' })).toHaveCount(0)
+    await expect(page.locator('.castle-card')).toHaveCount(0)
+    await expect(page.locator('.castle-grid-container')).toHaveCount(0)
     expect(transcript.railViolations).toEqual([])
+  })
 
-    await testInfo.attach('brands', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' })
-    expect(pageErrors).toEqual([])
-    expect(consoleErrors).toEqual([])
+  test('CPL + Calls moved to Sales; Marketing shows Tobias metrics + owner', async ({ page }) => {
+    await installMockBackend(page)
+    await gotoPinned(page, '/')
+
+    // CPL and Calls now live under Sales, not Marketing.
+    await expect(metricNames(page, 'Sales')).toContainText(['CPL (Qualified)', 'Calls'])
+    await expect(metricNames(page, 'Marketing')).not.toContainText(['CPL (Qualified)'])
+    await expect(metricNames(page, 'Marketing')).not.toContainText(['Calls'])
+
+    // Marketing carries Tobias's three metrics (followers exists; impressions + hot-DM are new).
+    const mkt = metricNames(page, 'Marketing')
+    await expect(mkt).toContainText(['Followers'])
+    await expect(mkt).toContainText(['Impressions'])
+    await expect(mkt).toContainText(['Hot-DM Inquiries'])
+
+    // Owners: Marketing = Tobias, Automation = Shawn; Baran no longer appears anywhere.
+    await expect(deptCard(page, 'Marketing').locator('.dri-name')).toHaveText('Tobias')
+    await expect(deptCard(page, 'Automation').locator('.dri-name')).toHaveText('Shawn')
+    await expect(deptCard(page, 'Customer Success').locator('.dri-name')).toHaveText('Saskia')
+    await expect(page.getByText('Baran')).toHaveCount(0)
+  })
+
+  test('Automation department is centered and colors its metrics by threshold', async ({ page }, testInfo) => {
+    await installMockBackend(page)
+    await gotoPinned(page, '/')
+
+    const auto = deptCard(page, 'Automation')
+    await expect(auto).toBeVisible()
+
+    // It is the one centered card (5th, under Customer Success).
+    await expect(page.locator('.dept-card.dept-centered')).toHaveCount(1)
+    await expect(page.locator('.dept-card.dept-centered .dept-name')).toHaveText('Automation')
+
+    // Its three finalized metrics render.
+    await expect(auto.locator('.metric-name')).toContainText(
+      ['Turnaround', 'Incident Resolve', 'Error Rate']
+    )
+
+    // Threshold coloring is live: the fixture spans green/yellow/red bands, so all three
+    // tints appear among the (non-current, non-total) cells of the Automation card.
+    await expect(auto.locator('.metric-cell.cell-tint-green').first()).toBeVisible()
+    await expect(auto.locator('.metric-cell.cell-tint-yellow').first()).toBeVisible()
+    await expect(auto.locator('.metric-cell.cell-tint-red').first()).toBeVisible()
+
+    await testInfo.attach('automation', { body: await auto.screenshot(), contentType: 'image/png' })
   })
 })

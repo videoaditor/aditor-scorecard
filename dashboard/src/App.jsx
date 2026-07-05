@@ -1,5 +1,4 @@
 import { useState, useRef, useMemo } from 'react'
-import CastleGrid from './components/CastleGrid'
 import useScorecard from './hooks/useScorecard'
 
 const METRICS = {
@@ -16,24 +15,35 @@ const METRICS = {
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
   activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last', desc: 'Editors that completed at least 1 card last week' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last', desc: 'Editors that completed at least 3 cards last week' },
-  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 20, agg: 'sum', desc: 'Instagram follower change from Meta API' },
+  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Instagram follower change from Meta API (Tobias; thresholds TBD)' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
   acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
+
+  // Marketing (Tobias) - neutral: no color banding until the captain finalizes thresholds.
+  impressions:    { name: 'Impressions',      icon: '👁️', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Instagram impressions (Tobias; pending Instagram token; thresholds TBD)' },
+  hotDmInquiries: { name: 'Hot-DM Inquiries', icon: '🔥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Hot inbound DM inquiries (Tobias; pending; thresholds TBD)' },
+
+  // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
+  autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
+  autoIncident:   { name: 'Incident Resolve', icon: '🚨', unit: 'h',  dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
+  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'sum', desc: 'Unblocked n8n error incidents per week. green <=1, yellow 2-3, red >3' },
 }
 
 const DRI = {
-  marketing: [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
-  sales:     [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
-  cs:        [{ name: 'Baran', initials: 'BA', color: '#F97316', img: './avatars/baran.jpg' }, { name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
-  people:    [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
+  marketing:  [{ name: 'Tobias', initials: 'TO', color: '#8B5CF6', img: './avatars/tobias.jpg' }],
+  sales:      [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
+  cs:         [{ name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
+  people:     [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
+  automation: [{ name: 'Shawn', initials: 'SH', color: '#06B6D4', img: './avatars/shawn.jpg' }],
 }
 
 const DEPARTMENTS = [
-  { id: 'marketing', name: 'Marketing',         icon: '📣', color: '#8B5CF6', metrics: ['cpl', 'calls', 'posts', 'followers'] },
-  { id: 'sales',     name: 'Sales',             icon: '💰', color: '#F97316', metrics: ['callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',        name: 'Customer Success',  icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
-  { id: 'people',    name: 'People',            icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
+  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'impressions', 'hotDmInquiries'] },
+  { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
+  { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
+  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['autoTurnaround', 'autoIncident', 'autoErrorRate'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -144,6 +154,8 @@ const getStatus = (value, key, weekCount = 1) => {
   if (value === null || value === undefined) return 'neutral'
   const m = METRICS[key]
   if (!m) return 'neutral'
+  // Metrics with thresholds still TBD render without green/yellow/red banding.
+  if (m.neutral) return 'neutral'
   // For fraction metrics, derive percentage from "num/den"
   if (m.agg === 'frac') {
     const [n, d] = String(value).split('/').map(Number)
@@ -181,6 +193,7 @@ const fmt = (val, key) => {
   }
   if (m.unit === '€') return val >= 1000 ? `€${(val/1000).toFixed(1)}k` : `€${val}`
   if (m.unit === 'h') return `${val}h`
+  if (m.unit === 'd') return `${val}d`
   return String(val)
 }
 
@@ -242,7 +255,7 @@ const MetricRow = ({ metricKey, columns, view }) => {
 }
 
 const DeptCard = ({ dept, columns, view }) => (
-  <div className="dept-card" style={{ '--accent': dept.color }}>
+  <div className={`dept-card${dept.centered ? ' dept-centered' : ''}`} style={{ '--accent': dept.color }}>
     <div className="dept-header">
       <span className="dept-icon">{dept.icon}</span>
       <span className="dept-name">{dept.name}</span>
@@ -330,7 +343,6 @@ const PeriodSelector = ({ view, month, setMonth, quarter, setQuarter, year, setY
 function App() {
   const { data: allWeeks, loading, syncing, lastSynced, error, refresh } = useScorecard()
   const [view, setView] = useState('month') // 'month' or 'quarter'
-  const [activeTab, setActiveTab] = useState('scorecard') // 'scorecard' or 'kingdom'
 
   const today = new Date()
   const [month, setMonth] = useState(today.getMonth())
@@ -411,29 +423,6 @@ function App() {
     ? `${MONTHS[month]} ${year}`
     : `${QUARTERS[quarter]} ${year}`
 
-  // Brands tab doesn't need loading
-  if (activeTab === 'kingdom') {
-    return (
-      <div className="app">
-        <div className="tab-navigation">
-          <button
-            className={`tab-btn ${activeTab === 'scorecard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('scorecard')}
-          >
-            Scorecard
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
-            onClick={() => setActiveTab('kingdom')}
-          >
-            Brands
-          </button>
-        </div>
-        <CastleGrid />
-      </div>
-    )
-  }
-
   if (loading) return (
     <div className="app loading-screen">
       <div className="loading-spinner"></div>
@@ -450,21 +439,6 @@ function App() {
 
   return (
     <div className="app">
-      <div className="tab-navigation">
-        <button
-          className={`tab-btn ${activeTab === 'scorecard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('scorecard')}
-        >
-          Scorecard
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'kingdom' ? 'active' : ''}`}
-          onClick={() => setActiveTab('kingdom')}
-        >
-          Brands
-        </button>
-      </div>
-
       <header className="header">
         <div className="header-left">
           <h1 className="title">

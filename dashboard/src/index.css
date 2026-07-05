@@ -51,46 +51,6 @@ body {
   min-height: 100vh;
 }
 
-/* Tab Navigation */
-.tab-navigation {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 32px;
-  padding: 4px;
-  background: rgba(17, 17, 24, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 14px;
-  border: 1px solid var(--border-light);
-  width: fit-content;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-}
-
-.tab-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-dim);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: -0.01em;
-}
-
-.tab-btn:hover {
-  color: var(--text);
-  background: var(--surface-hover);
-}
-
-.tab-btn.active {
-  color: var(--text);
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.28) 0%, rgba(251, 146, 60, 0.18) 100%);
-  box-shadow: 0 2px 12px rgba(249, 115, 22, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.2);
-}
-
 /* Header */
 .header {
   display: flex;
@@ -277,10 +237,23 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Automation (5th dept) sits on its own row, centered under the 2-col grid
+   (visually beneath Customer Success). One column wide = calc(50% - half the gap). */
+.dept-card.dept-centered {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(50% - 10px);
+  max-width: 100%;
+}
+
 /* Tablet */
 @media (max-width: 1000px) {
   .cards-grid {
     grid-template-columns: 1fr;
+  }
+  /* Single-column layout: the centered card spans the full width like the rest. */
+  .dept-card.dept-centered {
+    width: 100%;
   }
   .app {
     padding: 24px 28px;
@@ -295,18 +268,6 @@ body {
   }
   .cards-grid {
     gap: 12px;
-  }
-
-  /* Tab nav */
-  .tab-navigation {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 10px 12px;
-    font-size: 13px;
-    text-align: center;
   }
 
   /* Header: stack title above controls */

@@ -1,26 +1,21 @@
 /**
  * Shared network-boundary fake + HARD RAIL for the aditor-scorecard E2E suite.
  *
- * The real app talks to exactly five external boundaries (see AGENTS.md > Test surface):
- *   1. Teable read     GET   {TEABLE_URL}/api/table/{id}/record   (useScorecard.js:91)
- *   2. Backend health  GET   gen.aditor.ai/api/brand-health       (CastleGrid.jsx:28)
- *   3. Backend editors GET   gen.aditor.ai/api/brand-health/editors (CastleGrid.jsx:60)
- *   4. Backend action  POST  gen.aditor.ai/api/brand-health/action  (BrandActions.jsx:118)  [T1-1]
- *   5. Backend assign  PATCH gen.aditor.ai/api/brand-health/assign-editor (CastleGrid.jsx:109) [T1-2]
+ * Since the Brands/Kingdom tab was removed (2026-07), the app talks to exactly ONE
+ * external boundary (see AGENTS.md > Test surface):
+ *   1. Teable read   GET   {TEABLE_URL}/api/table/{id}/record   (useScorecard.js:96)
+ * There is no longer any money/auth/mutation/outbound surface in the app - it is a
+ * fully read-only display of the Teable feed.
  *
- * installMockBackend(page) fakes all five at the network layer and installs a
- * catch-all that ABORTS + records any request to a non-localhost host that is not
- * one of those five. That is the HARD RAIL: the suite physically cannot reach real
- * Teable or real gen.aditor.ai, so a forgotten mock fails closed instead of hitting
- * production. Every test asserts `transcript.railViolations` is empty.
- *
- * The two mutating boundaries (action, assign) additionally CAPTURE the exact request
- * body the app would have sent and write it to test-results/*.json as evidence - proving
- * the payload without ever sending it.
+ * installMockBackend(page) fakes that read at the network layer and installs a
+ * catch-all that ABORTS + records any request to a non-localhost host. That is the
+ * HARD RAIL: the suite physically cannot reach real Teable or any other real host,
+ * so a forgotten mock fails closed instead of hitting production. Every test asserts
+ * `transcript.railViolations` is empty.
  */
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -28,18 +23,13 @@ function loadFixture(name) {
   return JSON.parse(readFileSync(join(__dirname, name), 'utf-8'))
 }
 
-// Seeded, deterministic fixtures (single source of truth for specs' expected values).
+// Seeded, deterministic fixture (single source of truth for specs' expected values).
 export const teableRecords = loadFixture('teable-records.json')
-export const brandHealth = loadFixture('brand-health.json')
-export const editorsPayload = loadFixture('editors.json')
 
-// Backend base host - hardcoded in app source (BrandActions.jsx:3, CastleGrid.jsx:9).
-const BACKEND_HOST = 'gen.aditor.ai'
-
-// gen.aditor.ai is cross-origin from the localhost app, so the browser sends CORS
-// preflights for the non-simple requests (Teable's Authorization header, the JSON-body
-// POST/PATCH). The real backend returns these headers; the fake must too or the fetch
-// is blocked before our handler ever sees the real request.
+// The Teable read is cross-origin from the localhost app (the .env.test host is a
+// different port), so the browser sends a CORS preflight for the Authorization header.
+// The real endpoint returns these headers; the fake must too or the fetch is blocked
+// before our handler ever sees the request.
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
@@ -67,32 +57,21 @@ async function handledPreflight(route) {
   return false
 }
 
-/** Persist a captured T1 request body as an evidence artifact under test-results/. */
-function writeArtifact(filename, data) {
-  const dir = join(process.cwd(), 'test-results')
-  mkdirSync(dir, { recursive: true })
-  writeFileSync(join(dir, filename), JSON.stringify(data, null, 2))
-}
-
 /**
- * Install all boundary fakes + the hard rail on `page`. Call once per test, BEFORE
+ * Install the boundary fake + the hard rail on `page`. Call once per test, BEFORE
  * navigation. Returns a live transcript the test asserts against.
  */
 export async function installMockBackend(page) {
   const transcript = {
     teableFetches: 0,
-    healthFetches: 0,
-    editorsFetches: 0,
-    action: [], // postDataJSON of each POST /action (T1-1)
-    assign: [], // postDataJSON of each PATCH /assign-editor (T1-2)
     railViolations: [], // {method, url} for any non-localhost request that escaped the mocks
   }
 
   // (1) HARD RAIL - registered FIRST so it has the LOWEST priority: Playwright checks
-  // route handlers in reverse registration order, so the five specific mocks below
-  // (registered afterwards) win for the real boundaries. This matcher only fires for
-  // NON-localhost hosts, so localhost app assets are never intercepted. Anything that
-  // reaches here is a leak toward a real external host: record it and abort.
+  // route handlers in reverse registration order, so the specific mocks below (registered
+  // afterwards) win for the real boundaries. This matcher only fires for NON-localhost
+  // hosts, so localhost app assets are never intercepted. Anything that reaches here is a
+  // leak toward a real external host: record it and abort.
   await page.route(
     (url) => !isLocalhost(url.hostname),
     (route) => {
@@ -125,52 +104,6 @@ export async function installMockBackend(page) {
     }
   )
 
-  // (3) Backend health (matches both /api/brand-health and ?refresh=true).
-  await page.route(
-    (url) => url.hostname === BACKEND_HOST && url.pathname === '/api/brand-health',
-    async (route) => {
-      if (await handledPreflight(route)) return
-      transcript.healthFetches += 1
-      await fulfillJson(route, brandHealth)
-    }
-  )
-
-  // (4) Backend editors.
-  await page.route(
-    (url) => url.hostname === BACKEND_HOST && url.pathname === '/api/brand-health/editors',
-    async (route) => {
-      if (await handledPreflight(route)) return
-      transcript.editorsFetches += 1
-      await fulfillJson(route, editorsPayload)
-    }
-  )
-
-  // (5) T1-1 - action trigger. Capture the exact outbound payload, then fake success.
-  await page.route(
-    (url) => url.hostname === BACKEND_HOST && url.pathname === '/api/brand-health/action',
-    async (route) => {
-      if (await handledPreflight(route)) return
-      const req = route.request()
-      const body = req.postDataJSON()
-      transcript.action.push(body)
-      writeArtifact('action-request.json', { method: req.method(), url: req.url(), body })
-      await fulfillJson(route, { ok: true })
-    }
-  )
-
-  // (6) T1-2 - assign-editor. Capture the exact outbound payload, then fake success.
-  await page.route(
-    (url) => url.hostname === BACKEND_HOST && url.pathname === '/api/brand-health/assign-editor',
-    async (route) => {
-      if (await handledPreflight(route)) return
-      const req = route.request()
-      const body = req.postDataJSON()
-      transcript.assign.push(body)
-      writeArtifact('assign-request.json', { method: req.method(), url: req.url(), body })
-      await fulfillJson(route, { ok: true })
-    }
-  )
-
   return transcript
 }
 
@@ -181,16 +114,14 @@ export const FIXED_TIME = '2026-02-15T12:00:00+01:00'
 /**
  * Pin the page clock, then navigate. Pinning BEFORE goto is what makes the app's many
  * wall-clock reads (current-week highlight, month/quarter defaults, the 5-min refresh
- * interval, midnight-expiry) deterministic. See report section 3 > Determinism.
+ * interval) deterministic. See AGENTS.md > Determinism.
  */
 export async function gotoPinned(page, path = '/') {
   await page.clock.install({ time: FIXED_TIME })
   await page.goto(path)
-  // Neutralize CSS animation/transition. Several castle states animate infinitely (e.g. the
-  // burning-castle `burning-shake` transform loop, castle-grid.css), which keeps the element
-  // perpetually "unstable" and un-clickable for Playwright. Disabling animations makes the UI
-  // deterministic and screenshots crisp; it has no effect on app logic, and toasts stay visible
-  // (their base style is opacity:1). The rule applies to current and future-rendered nodes.
+  // Neutralize CSS animation/transition so the UI is deterministic for Playwright and
+  // screenshots are crisp. It has no effect on app logic. The rule applies to current and
+  // future-rendered nodes.
   await page.addStyleTag({
     content: '*, *::before, *::after { animation: none !important; transition: none !important; }',
   })
