@@ -108,6 +108,37 @@ describe('runCollection - weekly IG collection (hermetic, hard rail)', () => {
     }
   });
 
+  it('leaves hotDms unwritten when the IG self id cannot be resolved (never counts own replies)', async () => {
+    const t = installFetchMock(S.makeHandlers({ meNoId: true }));
+    try {
+      const result = await runCollection(S.makeEnv(), { now: S.NOW, log: () => {} });
+      // Without a self id we refuse to classify DMs: hotDms stays null and is skipped.
+      expect(result.hotDms).toBeNull();
+      // The classifier is never reached, so no own-reply can be counted as HOT.
+      expect(t.calls.some((c) => c.url.includes('api.anthropic.com'))).toBe(false);
+      const patch = t.calls.find((c) => c.method === 'PATCH');
+      expect(JSON.parse(patch.body).record.fields.hotDms).toBeUndefined();
+      expect(t.railViolations).toEqual([]);
+    } finally {
+      t.restore();
+    }
+  });
+
+  it('skips reach (never writes a false 0) when IG returns an empty reach series', async () => {
+    const t = installFetchMock(S.makeHandlers({ reachValues: [] }));
+    try {
+      const result = await runCollection(S.makeEnv(), { now: S.NOW, log: () => {} });
+      // An empty series is an anomaly, not a real zero-reach week - skip rather than write 0.
+      expect(result.reach).toBeNull();
+      expect(result.hotDms).toBe(S.EXPECTED_HOT);
+      const patch = t.calls.find((c) => c.method === 'PATCH');
+      expect(JSON.parse(patch.body).record.fields).toEqual({ hotDms: S.EXPECTED_HOT });
+      expect(t.railViolations).toEqual([]);
+    } finally {
+      t.restore();
+    }
+  });
+
   it('hard rail records and blocks any non-allowlisted host', async () => {
     const t = installFetchMock([]);
     try {

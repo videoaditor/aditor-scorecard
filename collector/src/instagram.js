@@ -54,6 +54,7 @@ export async function fetchWeeklyReach(env, target, me) {
   );
   const series = (data.data || []).find((m) => m.name === 'reach') || (data.data || [])[0];
   const values = series?.values || [];
+  if (values.length === 0) return null; // absent/empty series - skip, never write a false 0
   const total = values.reduce((sum, v) => sum + (Number(v.value) || 0), 0);
   return Math.round(total);
 }
@@ -67,6 +68,9 @@ export async function fetchWeeklyReach(env, target, me) {
 // message strings - see the PRIVACY note above; callers must not log or persist these.
 export async function fetchInboundMessages(env, target, me) {
   const self = me || (await fetchMe(env));
+  // No self id means we cannot exclude our own replies - refuse rather than count them as
+  // inbound HOT DMs. The caller nulls + skips hotDms, preserving the prior value.
+  if (!self.id) throw new Error('IG self id unresolved; refusing to classify DMs (cannot exclude own replies)');
 
   const conversations = [];
   let url = igUrl(env, '/me/conversations', { fields: 'id,updated_time', limit: '50' });

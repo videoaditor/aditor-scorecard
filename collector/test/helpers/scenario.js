@@ -76,6 +76,7 @@ export function makeHandlers({
   messages = MESSAGES,
   reachFail = false,
   classifyFail = false,
+  meNoId = false,
 } = {}) {
   const has = (u, s) => u.includes(s);
   return [
@@ -91,7 +92,7 @@ export function makeHandlers({
     {
       method: 'GET',
       match: (u) => has(u, '/me?fields=user_id'),
-      respond: () => ({ json: { user_id: SELF_ID, username: 'aditor.ai' } }),
+      respond: () => ({ json: meNoId ? { username: 'aditor.ai' } : { user_id: SELF_ID, username: 'aditor.ai' } }),
     },
     // IG: insights reach
     {
