@@ -25,7 +25,8 @@ const METRICS = {
   reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', green: 100000, yellow: 50000, agg: 'sum', desc: 'Organic weekly Instagram reach (unique accounts reached) from the IG collector. green >=100k, yellow 50-100k, red <50k (captain-set 2026-07)' },
   hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (captain-set 2026-07)' },
 
-  // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
+  // Automation (Shawn) - finalized green/yellow/red thresholds encoded here; the
+  // Requests row is neutral (data-driven, no thresholds yet).
   autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
   autoIncident:   { name: 'Incident Resolve', icon: '🚨', unit: 'h',  dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
   autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3' },

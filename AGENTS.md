@@ -22,7 +22,7 @@ The **dashboard** is entirely a read-only render of the Teable feed, so the SPA 
 
 - `METRICS` (key → `{name, icon, unit, dir, green, yellow, agg, desc, neutral?}`), `DRI` (dept id → owner `{name, initials, color, img}`), `DEPARTMENTS` (ordered list; the 5th, Automation, carries `centered: true`).
 - Owners: Marketing = **Tobias**, Sales = **Alan**, Customer Success = **Saskia**, People = **Tim**, Automation = **Shawn**.
-- **Automation** is the 5th card, rendered centered on its own row under Customer Success via `.dept-card.dept-centered` (spans the 2-col grid, `justify-self: center`, one-column-wide; full-width at ≤1000px). Its 3 metrics have finalized green/yellow/red thresholds (all `dir:'lower'`): turnaround ≤3 / ≤6 days, incident-resolve ≤12 / ≤24 h, error-rate ≤1 / ≤3 per week.
+- **Automation** is the 5th card, rendered centered on its own row under Customer Success via `.dept-card.dept-centered` (spans the 2-col grid, `justify-self: center`, one-column-wide; full-width at ≤1000px). Its rows are a neutral **Requests** row (`automationRequests`, `dir:'higher'`, data-driven from Teable, no thresholds yet - added 2026-07) followed by 3 with finalized green/yellow/red thresholds (all `dir:'lower'`): turnaround ≤3 / ≤6 days, incident-resolve ≤12 / ≤24 h, error-rate ≤1 / ≤3 per week.
 - **Marketing metric banding (captain-set 2026-07).** Tobias's 3 Marketing metrics are color-banded like IG Posts (they were `neutral` until the captain set thresholds): `reach` green ≥100k / yellow 50-100k / red <50k; `hotDms` green ≥10 / yellow 5-9 / red <5; `followers` (weekly net gain) green ≥100 / yellow 50-99 / red <50 - all `dir:'higher'`. **The captain owns these; do not auto-adjust.** `reach` + `hotDms` are fed by the `collector/` Worker; `reach` is the Marketing slot that used to read the paid-ads `impressions` field (rewired 2026-07). Values display in **k-notation** (`kfmt`: ≥1000 → `31.5k`, using the true value). Sum-metric TOTAL thresholds scale by the weeks that actually have data for that metric (so a just-started metric's single real week doesn't mis-band the total).
 
 ### Teable schema fields status (2026-07)
@@ -35,6 +35,7 @@ Field state on the Scorecard table `tbl7295480347s6oVaI` (base `bsedpj9rQtsQFsPC
 | `hotDms` | `hotDms` (number) | already existed (was empty) | `collector/` Worker - classified hot-DM count |
 | (none) | `impressions` (number) | **exists, owned by the disabled paid-ads "Scorecard - Marketing" n8n workflow** (paid-ad impressions - a different metric) | left untouched; the dashboard no longer reads it |
 | `autoTurnaround` / `autoIncident` / `autoErrorRate` | `turnaround` / `incidentResolution` / `automationErrors` | **wired 2026-07** via `RENAMED_FIELDS` (`useScorecard.js`): the dashboard maps the real Teable fields → the `auto*` display keys, so Automation renders whatever is in Teable (dash for empty/null). Write KW27 automation values to `turnaround` / `incidentResolution` / `automationErrors`. | firstmate / CF-worker automation pipeline |
+| `automationRequests` | `automationRequests` (number) | **added 2026-07** (new field + row) - direct field (`DIRECT_FIELDS`), rendered as the neutral "Requests" row | firstmate / automation pipeline (meetings + Slack) |
 
 **`reach` ≠ `impressions` is a hard rule.** Never write organic reach into `impressions`, and never let the collector touch `impressions` / `followers` / `followersCount` - the n8n workflows own those. The schema write used **`TEABLE_CLOUD_GENERAL_ACCESS`** (in `~/work/clients/aditor/.env`, full `field|create` + `record|update` scope); the older note about a missing `ADITOR_TEABLE_CLOUD_TOKEN` is obsolete.
 
@@ -95,7 +96,7 @@ cd dashboard && npm run build -- --mode test && npm run test:e2e
 `npm run build -- --mode test` is required before `npm run test:e2e`: `vite preview` serves whatever is in `dist/`, and `--mode test` bakes in `dashboard/.env.test`.
 
 Layout:
-- Spec: `dashboard/tests/smoke.spec.js` - the whole gate (build + display floor): five department cards render, Brands tab is gone, CPL/Calls sit under Sales, Marketing shows Tobias's metrics + owner, and the centered Automation card colors its metrics by threshold.
+- Spec: `dashboard/tests/smoke.spec.js` - the whole gate (build + display floor): five department cards render, Brands tab is gone, CPL/Calls sit under Sales, Marketing shows Tobias's metrics + owner (now color-banded, with large values like `reach` in k-notation), and the centered Automation card renders its neutral Requests row plus colors its threshold metrics.
 - Harness + fixtures: `dashboard/tests/fixtures/mockBackend.js` and seeded `teable-records.json`.
 - Config: `dashboard/playwright.config.js`, non-secret env in `dashboard/.env.test`.
 
