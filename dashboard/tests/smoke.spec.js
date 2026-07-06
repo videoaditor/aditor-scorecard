@@ -90,6 +90,23 @@ test.describe('smoke - build + display floor', () => {
     await expect(page.getByText('Baran')).toHaveCount(0)
   })
 
+  test('Marketing metrics are color-banded (Fix 2) and reach shows k-notation (Fix 3)', async ({ page }) => {
+    await installMockBackend(page)
+    await gotoPinned(page, '/')
+
+    const mkt = deptCard(page, 'Marketing')
+    const row = (name) => mkt.locator('.metric-row').filter({ has: page.locator('.metric-name', { hasText: name }) })
+
+    // Fix 2: reach / hotDms / followers now band like IG Posts (they were `neutral` before),
+    // so each shows a threshold-tinted (green/yellow/red) cell rather than plain neutral.
+    for (const name of ['Reach', 'Hot DMs', 'Followers']) {
+      await expect(row(name).locator('.metric-cell[class*="cell-tint-"]').first()).toBeVisible()
+    }
+
+    // Fix 3: large values render in compact k-notation (fixture reach 12000 -> "12.0k").
+    await expect(row('Reach').locator('.metric-value', { hasText: /^\d[\d.]*k$/ }).first()).toBeVisible()
+  })
+
   test('Automation department is centered and colors its metrics by threshold', async ({ page }, testInfo) => {
     await installMockBackend(page)
     await gotoPinned(page, '/')

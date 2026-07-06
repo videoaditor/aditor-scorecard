@@ -18,11 +18,17 @@ const DIRECT_FIELDS = [
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
-  'autoTurnaround', 'autoIncident', 'autoErrorRate',
 ]
 
-// Renamed mappings: Teable field → internal key
-const RENAMED_FIELDS = { clientCpl: 'cpl' }
+// Renamed mappings: Teable field → internal key. The Automation metrics live on the
+// scorecard table as `turnaround` / `incidentResolution` / `automationErrors` (NOT the
+// dashboard's `auto*` display keys); map them so real Automation data actually renders.
+const RENAMED_FIELDS = {
+  clientCpl: 'cpl',
+  turnaround: 'autoTurnaround',
+  incidentResolution: 'autoIncident',
+  automationErrors: 'autoErrorRate',
+}
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages
 const RATIO_TO_PCT = new Set(['callBookRate', 'closeRate'])

@@ -15,14 +15,15 @@ const METRICS = {
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
   activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last', desc: 'Editors that completed at least 1 card last week' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last', desc: 'Editors that completed at least 3 cards last week' },
-  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Instagram follower change from Meta API (Tobias; thresholds TBD)' },
+  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 50, agg: 'sum', desc: 'Weekly net Instagram follower change from Meta API (Tobias). green >=100, yellow 50-99, red <50 (captain-set 2026-07)' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
   acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
 
-  // Marketing (Tobias) - neutral: no color banding until the captain finalizes thresholds.
-  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Organic Instagram reach for the week (unique accounts reached) from the IG collector; thresholds TBD' },
-  hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Classified hot inbound Instagram DMs (ads / booking a call / pricing) from the IG collector; thresholds TBD' },
+  // Marketing (Tobias) - IG collector metrics, banded like IG Posts. Thresholds are
+  // CAPTAIN-SET (2026-07); do not auto-adjust. Raw values drive banding; display is k-notation.
+  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', green: 100000, yellow: 50000, agg: 'sum', desc: 'Organic weekly Instagram reach (unique accounts reached) from the IG collector. green >=100k, yellow 50-100k, red <50k (captain-set 2026-07)' },
+  hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (captain-set 2026-07)' },
 
   // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
   autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
@@ -176,6 +177,10 @@ const getStatus = (value, key, weekCount = 1) => {
   }
 }
 
+// Compact k-notation for large magnitudes: 1000 -> "1.0k", 31458 -> "31.5k". Uses the
+// TRUE value (never a hardcoded headline); values under 1000 render as-is.
+const kfmt = (val) => (Math.abs(val) >= 1000 ? `${(val / 1000).toFixed(1)}k` : `${val}`)
+
 const fmt = (val, key) => {
   if (val === null || val === undefined) return '—'
   const m = METRICS[key]
@@ -183,8 +188,8 @@ const fmt = (val, key) => {
   if (m.unit === 'frac') return String(val)
   if (m.unit === '%') return `${val}%`
   if (m.unit === '±') {
-    const sign = val >= 0 ? '+' : ''
-    return `${sign}${val}`
+    const sign = val >= 0 ? '+' : '-'
+    return `${sign}${kfmt(Math.abs(val))}`
   }
   if (m.unit === '€±') {
     const sign = val >= 0 ? '+' : ''
@@ -194,7 +199,7 @@ const fmt = (val, key) => {
   if (m.unit === '€') return val >= 1000 ? `€${(val/1000).toFixed(1)}k` : `€${val}`
   if (m.unit === 'h') return `${val}h`
   if (m.unit === 'd') return `${val}d`
-  return String(val)
+  return kfmt(val)
 }
 
 const StatusDot = ({ status }) => <span className={`status-dot status-${status}`} />
@@ -237,8 +242,12 @@ const MetricRow = ({ metricKey, columns, view }) => {
           const isCurrent = col.isCurrent
           const isTotal = col.isTotal
           // For total column, scale sum thresholds by number of filled weeks
+          // Scale sum-metric total thresholds by the weeks that actually have data for THIS
+          // metric (not every non-empty column). Otherwise a just-started metric with one
+          // real week (e.g. reach/hotDms KW27) is judged against an N-week-scaled bar and the
+          // total mis-bands (a green week under a red total).
           const filledWeeks = isTotal
-            ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal).length
+            ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
             : 1
           const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
           const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''

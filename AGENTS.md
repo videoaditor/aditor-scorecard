@@ -23,7 +23,7 @@ The **dashboard** is entirely a read-only render of the Teable feed, so the SPA 
 - `METRICS` (key → `{name, icon, unit, dir, green, yellow, agg, desc, neutral?}`), `DRI` (dept id → owner `{name, initials, color, img}`), `DEPARTMENTS` (ordered list; the 5th, Automation, carries `centered: true`).
 - Owners: Marketing = **Tobias**, Sales = **Alan**, Customer Success = **Saskia**, People = **Tim**, Automation = **Shawn**.
 - **Automation** is the 5th card, rendered centered on its own row under Customer Success via `.dept-card.dept-centered` (spans the 2-col grid, `justify-self: center`, one-column-wide; full-width at ≤1000px). Its 3 metrics have finalized green/yellow/red thresholds (all `dir:'lower'`): turnaround ≤3 / ≤6 days, incident-resolve ≤12 / ≤24 h, error-rate ≤1 / ≤3 per week.
-- **Neutral metrics.** Tobias's 3 Marketing metrics (`followers`, `reach`, `hotDms`) are flagged `neutral: true` and get **no** color banding (thresholds still TBD from the captain). `getStatus` short-circuits `m.neutral` → `'neutral'`, so they render dim/grey and are excluded from the health-summary counts. `posts` (IG Posts) keeps its own thresholds. `reach` + `hotDms` are fed by the `collector/` Worker; `reach` is the Marketing slot that used to read the paid-ads `impressions` field (rewired 2026-07 - see below).
+- **Marketing metric banding (captain-set 2026-07).** Tobias's 3 Marketing metrics are color-banded like IG Posts (they were `neutral` until the captain set thresholds): `reach` green ≥100k / yellow 50-100k / red <50k; `hotDms` green ≥10 / yellow 5-9 / red <5; `followers` (weekly net gain) green ≥100 / yellow 50-99 / red <50 - all `dir:'higher'`. **The captain owns these; do not auto-adjust.** `reach` + `hotDms` are fed by the `collector/` Worker; `reach` is the Marketing slot that used to read the paid-ads `impressions` field (rewired 2026-07). Values display in **k-notation** (`kfmt`: ≥1000 → `31.5k`, using the true value). Sum-metric TOTAL thresholds scale by the weeks that actually have data for that metric (so a just-started metric's single real week doesn't mis-band the total).
 
 ### Teable schema fields status (2026-07)
 
@@ -34,9 +34,19 @@ Field state on the Scorecard table `tbl7295480347s6oVaI` (base `bsedpj9rQtsQFsPC
 | `reach` | `reach` (number) | **added 2026-07** via create-field API | `collector/` Worker - organic IG reach |
 | `hotDms` | `hotDms` (number) | already existed (was empty) | `collector/` Worker - classified hot-DM count |
 | (none) | `impressions` (number) | **exists, owned by the disabled paid-ads "Scorecard - Marketing" n8n workflow** (paid-ad impressions - a different metric) | left untouched; the dashboard no longer reads it |
-| `autoTurnaround` / `autoIncident` / `autoErrorRate` | `turnaround` / `incidentResolution` / `automationErrors` | **name mismatch / unwired**: the dashboard reads `auto*` keys that don't exist on the table, so Automation renders empty/neutral. Pre-existing; out of scope for wire-ig-metrics (follow-up) | CF-worker automation pipeline (not yet feeding) |
+| `autoTurnaround` / `autoIncident` / `autoErrorRate` | `turnaround` / `incidentResolution` / `automationErrors` | **wired 2026-07** via `RENAMED_FIELDS` (`useScorecard.js`): the dashboard maps the real Teable fields → the `auto*` display keys, so Automation renders whatever is in Teable (dash for empty/null). Write KW27 automation values to `turnaround` / `incidentResolution` / `automationErrors`. | firstmate / CF-worker automation pipeline |
 
 **`reach` ≠ `impressions` is a hard rule.** Never write organic reach into `impressions`, and never let the collector touch `impressions` / `followers` / `followersCount` - the n8n workflows own those. The schema write used **`TEABLE_CLOUD_GENERAL_ACCESS`** (in `~/work/clients/aditor/.env`, full `field|create` + `record|update` scope); the older note about a missing `ADITOR_TEABLE_CLOUD_TOKEN` is obsolete.
+
+### Automation metrics - corrected definitions (captain, 2026-07-06)
+
+The Automation rows (Turnaround, Incident Resolve, Error Rate) are **dashed for KW27** - the accurate values were not pullable before the meeting (self-hosted `n8n.aditor.ai` history API unauthorized/blocked; Slack incident/bot-DM reads still pending). **Do not fabricate; render whatever is in Teable, dash for null.** The corrected definitions for a future backfill:
+
+- **Incidents / week** (→ the count cell: Teable `automationErrors` → `autoErrorRate` "Error Rate"): count of **deduped incidents** entering the incident pipeline that week across THREE sources - n8n **cloud** (deduped), n8n **server** (self-hosted `n8n.aditor.ai`, deduped), and **Slack**-reported incidents. NOT raw n8n workflow error executions. (The earlier `34` was n8n-cloud-only and wrong; reverted to null.)
+- **Automation requests + Turnaround** (→ Teable `turnaround` → `autoTurnaround` "Turnaround"): the automation-request pipeline pushes tasks to the kanban board; requests come from **meetings + Slack**. Backfill source: the automation Slack bot **DMs the captain** his tasks after each meeting - pull last week's from those DMs (or from the worker / kanban). Turnaround = request timing (received → delivered); if delivery timing is unavailable, populate the request COUNT and flag Turnaround.
+- **Incident Resolve** (Teable `incidentResolution` → `autoIncident`): resolution TIME - **not** one of the two corrected metrics; no backfill source defined yet, so it stays dashed.
+- **Access blockers to clear first:** self-hosted `n8n.aditor.ai` history API (unauthorized/blocked), and Slack read access for incident messages + the bot DMs.
+- The dashboard `desc`/thresholds for these rows still encode the OLD definitions (e.g. "Error Rate" = "unblocked n8n errors, green ≤1"); revisit them when the corrected metrics are wired and real ranges are known.
 
 ## Owner avatars (build-time Slack fetch)
 
