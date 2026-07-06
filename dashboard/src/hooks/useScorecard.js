@@ -19,7 +19,7 @@ const DIRECT_FIELDS = [
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
-  'automationRequests',
+  'automationRequests', 'automationRequestsDone',
 ]
 
 // Renamed mappings: Teable field → internal key. The Automation metrics live on the
@@ -95,6 +95,11 @@ function postProcess(rows) {
     const ns = r.newSubs ?? 0
     const ts = r.testStarts ?? 0
     r.acquisitionRate = `${ns}/${ts}`
+    // Derive "Requests Done" as a done/incoming ratio string (dash when neither exists).
+    // automationRequests held the raw incoming until here; automationRequestsDone the done.
+    const reqDone = r.automationRequestsDone
+    const reqIn = r.automationRequests
+    r.automationRequests = (reqDone == null && reqIn == null) ? null : `${reqDone ?? 0}/${reqIn ?? 0}`
     return r
   })
 }

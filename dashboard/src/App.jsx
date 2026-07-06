@@ -15,22 +15,22 @@ const METRICS = {
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
   activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last', desc: 'Editors that completed at least 1 card last week' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last', desc: 'Editors that completed at least 3 cards last week' },
-  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 50, agg: 'sum', desc: 'Weekly net Instagram follower change from Meta API (Tobias). green >=100, yellow 50-99, red <50 (captain-set 2026-07)' },
+  followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 50, agg: 'sum', desc: 'Weekly net Instagram follower change from Meta API (Tobias). green >=100, yellow 50-99, red <50 (thresholds set 2026-07)' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
   acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
 
-  // Marketing (Tobias) - IG collector metrics, banded like IG Posts. Thresholds are
-  // CAPTAIN-SET (2026-07); do not auto-adjust. Raw values drive banding; display is k-notation.
-  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', green: 100000, yellow: 50000, agg: 'sum', desc: 'Organic weekly Instagram reach (unique accounts reached) from the IG collector. green >=100k, yellow 50-100k, red <50k (captain-set 2026-07)' },
-  hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (captain-set 2026-07)' },
+  // Marketing (Tobias) - IG collector metrics, banded like IG Posts. Thresholds were set
+  // 2026-07; do not auto-adjust. Raw values drive banding; display is k-notation.
+  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', green: 100000, yellow: 50000, agg: 'sum', desc: 'Organic weekly Instagram reach (unique accounts reached) from the IG collector. green >=100k, yellow 50-100k, red <50k (thresholds set 2026-07)' },
+  hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (thresholds set 2026-07)' },
 
-  // Automation (Shawn) - finalized green/yellow/red thresholds encoded here; the
-  // Requests row is neutral (data-driven, no thresholds yet).
-  autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
-  autoIncident:   { name: 'Incident Resolve', icon: '🚨', unit: 'h',  dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
-  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3' },
-  automationRequests: { name: 'Requests',     icon: '📥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Total weekly automation/feature requests into the pipeline (from meetings + Slack). Neutral - thresholds TBD from the captain.' },
+  // Automation (Shawn) - finalized green/yellow/red thresholds. "Requests Done" is a
+  // done/incoming completion ratio (frac) colored by percent, like Acquisition Rate.
+  autoTurnaround: { name: 'Turnaround Time',  icon: '🔄', unit: 'd',    dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
+  autoIncident:   { name: 'Resolve Time',     icon: '🚨', unit: 'h',    dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
+  autoErrorRate:  { name: 'Critical Errors',  icon: '⚠️', unit: '',     dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3' },
+  automationRequests: { name: 'Requests Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Automation/feature requests completed vs incoming this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
 }
 
 const DRI = {
@@ -46,7 +46,7 @@ const DEPARTMENTS = [
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
-  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoIncident', 'autoErrorRate'] },
+  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

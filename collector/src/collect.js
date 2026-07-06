@@ -1,6 +1,6 @@
 // Orchestration for one weekly IG collection run.
 //
-// Collects the two captain-settled metrics - organic reach + classified hot-DM count -
+// Collects the two agreed metrics - organic reach + classified hot-DM count -
 // and upserts them into the previous completed week's Teable row (matching the n8n
 // cadence). reach and hotDms are collected INDEPENDENTLY: if one source fails we still
 // write the other, and a failed metric is omitted from the upsert (its prior value is
