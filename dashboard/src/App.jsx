@@ -165,7 +165,7 @@ const getStatus = (value, key, weekCount = 1) => {
     return pct >= m.green ? 'green' : pct >= m.yellow ? 'yellow' : 'red'
   }
   // Scale thresholds for sum metrics when showing totals across multiple weeks
-  const scale = (m.agg === 'sum') ? weekCount : 1
+  const scale = (m.agg === 'sum') ? Math.max(1, weekCount) : 1
   if (m.dir === 'higher') {
     if (value >= m.green * scale) return 'green'
     if (value >= m.yellow * scale) return 'yellow'
