@@ -1,0 +1,29 @@
+{
+  // aditor-scorecard IG collector - weekly Cloudflare Worker.
+  // Deploy: `npx wrangler deploy` (needs a Workers-scoped Cloudflare token; the current
+  // CLOUDFLARE_API_TOKEN_ADITOR is DNS+Tunnel-scoped only and CANNOT deploy Workers).
+  "name": "aditor-scorecard-ig-collector",
+  "main": "src/index.js",
+  "compatibility_date": "2026-01-01",
+
+  // Weekly on MONDAY at 05:00 UTC. Cloudflare cron is UTC-only. Berlin is UTC+2 (summer)
+  // / UTC+1 (winter), so 05:00 UTC = 07:00 (summer) / 06:00 (winter) Berlin - always AFTER
+  // the n8n metric fetchers (Fetch Meta Metrics Mon 03:50, Compute Derived Metrics Mon
+  // 04:10 Berlin) in BOTH DST states, so the weekly row already exists when we upsert.
+  "triggers": {
+    "crons": ["0 5 * * 1"]
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Non-secret config. Secrets (INSTAGRAM_ADITOR_TOKEN, ANTHROPIC_API_KEY_ADITOR,
+  // TEABLE_CLOUD_GENERAL_ACCESS) are set out-of-band via `wrangler secret put` - see README.
+  "vars": {
+    "TEABLE_CLOUD_BASE_URL": "https://app.teable.ai",
+    "TEABLE_TABLE_ID": "tbl7295480347s6oVaI",
+    "IG_API_BASE": "https://graph.instagram.com/v21.0",
+    "ANTHROPIC_MODEL": "claude-haiku-4-5-20251001"
+  }
+}

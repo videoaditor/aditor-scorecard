@@ -74,11 +74,14 @@ test.describe('smoke - build + display floor', () => {
     await expect(metricNames(page, 'Marketing')).not.toContainText(['CPL (Qualified)'])
     await expect(metricNames(page, 'Marketing')).not.toContainText(['Calls'])
 
-    // Marketing carries Tobias's three metrics (followers exists; impressions + hot-DM are new).
+    // Marketing carries Tobias's metrics: followers + the IG-collector metrics (Reach,
+    // Hot DMs). Reach replaced the old paid-ads "Impressions" slot (sc "impressions" is a
+    // different, n8n-owned field the dashboard no longer reads).
     const mkt = metricNames(page, 'Marketing')
     await expect(mkt).toContainText(['Followers'])
-    await expect(mkt).toContainText(['Impressions'])
-    await expect(mkt).toContainText(['Hot-DM Inquiries'])
+    await expect(mkt).toContainText(['Reach'])
+    await expect(mkt).toContainText(['Hot DMs'])
+    await expect(mkt).not.toContainText(['Impressions'])
 
     // Owners: Marketing = Tobias, Automation = Shawn; Baran no longer appears anywhere.
     await expect(deptCard(page, 'Marketing').locator('.dri-name')).toHaveText('Tobias')

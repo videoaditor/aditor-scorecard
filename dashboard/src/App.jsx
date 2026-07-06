@@ -21,8 +21,8 @@ const METRICS = {
   acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
 
   // Marketing (Tobias) - neutral: no color banding until the captain finalizes thresholds.
-  impressions:    { name: 'Impressions',      icon: '👁️', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Instagram impressions (Tobias; pending Instagram token; thresholds TBD)' },
-  hotDmInquiries: { name: 'Hot-DM Inquiries', icon: '🔥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Hot inbound DM inquiries (Tobias; pending; thresholds TBD)' },
+  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Organic Instagram reach for the week (unique accounts reached) from the IG collector; thresholds TBD' },
+  hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Classified hot inbound Instagram DMs (ads / booking a call / pricing) from the IG collector; thresholds TBD' },
 
   // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
   autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
@@ -39,7 +39,7 @@ const DRI = {
 }
 
 const DEPARTMENTS = [
-  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'impressions', 'hotDmInquiries'] },
+  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'reach', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },

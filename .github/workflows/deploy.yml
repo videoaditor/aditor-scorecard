@@ -1,0 +1,39 @@
+name: Deploy collector worker
+
+# Push-to-deploy for the IG metrics collector Worker ONLY.
+#
+# When the collector changes on master, deploy it via its own collector/wrangler.jsonc.
+# This never touches the dashboard: the dashboard is a static site published to the
+# gh-pages branch out-of-band (`npm run deploy` from dashboard/), not by this workflow.
+#
+# Auth: repo SECRET CLOUDFLARE_API_TOKEN (a least-privilege Workers-deploy token) +
+# repo VARIABLE CLOUDFLARE_ACCOUNT_ID. This deploys the SCRIPT only. The Worker's RUNTIME
+# secrets (INSTAGRAM_ADITOR_TOKEN, ANTHROPIC_API_KEY_ADITOR, TEABLE_CLOUD_GENERAL_ACCESS)
+# are NEVER stored in GitHub - per the credential registry, roots stay off GH; they are
+# set directly on the Worker (`wrangler secret put`) after the first deploy.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'collector/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-collector-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy Worker (script + cron trigger only)
+        working-directory: collector
+        run: npx --yes wrangler@4 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}

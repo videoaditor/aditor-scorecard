@@ -7,11 +7,14 @@ const TABLE_ID = import.meta.env.VITE_TEABLE_TABLE_ID || ''
 // Direct field mappings: Teable field name === internal key.
 // Fields absent in Teable map to null (toNum), so the dashboard renders them as a
 // neutral placeholder instead of crashing - this is what keeps the pending metrics
-// (impressions, hotDmInquiries, autoTurnaround, autoIncident, autoErrorRate) safe to
-// ship before their Teable schema fields land. See AGENTS.md > Deferred Teable fields.
+// (reach, hotDms, autoTurnaround, autoIncident, autoErrorRate) safe to ship before
+// their Teable pipelines feed values. See AGENTS.md > Deferred Teable fields.
+// NOTE: `reach` is organic Instagram reach (written by the wire-ig-metrics collector).
+// It is NOT the paid-ads `impressions` field (owned by the disabled n8n paid-ads
+// workflow), which the dashboard intentionally no longer reads.
 const DIRECT_FIELDS = [
   'start', 'end',
-  'calls', 'posts', 'followers', 'impressions', 'hotDmInquiries',
+  'calls', 'posts', 'followers', 'reach', 'hotDms',
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',

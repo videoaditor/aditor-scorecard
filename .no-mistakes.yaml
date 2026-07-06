@@ -11,5 +11,10 @@
 #
 # lint is deliberately excluded: it is currently broken (no eslint.config.js; ESLint 9
 # requires one) and is not part of the baseline. See AGENTS.md > Known facts.
+#
+# Two test surfaces, both hermetic (no real network):
+#   collector/  - vitest T1 suite for the IG metrics Worker (Teable write + DM
+#                 classification), IG/Teable/Anthropic all faked at the fetch boundary.
+#   dashboard/  - the Playwright build + display floor described above.
 commands:
-  test: cd dashboard && npm ci && npx playwright install chromium && npm run build -- --mode test && npm run test:e2e
+  test: (cd collector && npm ci && npm test) && (cd dashboard && npm ci && npx playwright install chromium && npm run build -- --mode test && npm run test:e2e)
