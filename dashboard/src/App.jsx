@@ -27,7 +27,7 @@ const METRICS = {
   // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
   autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
   autoIncident:   { name: 'Incident Resolve', icon: '🚨', unit: 'h',  dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
-  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'sum', desc: 'Unblocked n8n error incidents per week. green <=1, yellow 2-3, red >3' },
+  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Unblocked n8n error incidents per week. green <=1, yellow 2-3, red >3' },
 }
 
 const DRI = {
