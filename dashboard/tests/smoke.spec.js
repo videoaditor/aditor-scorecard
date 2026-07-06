@@ -118,9 +118,10 @@ test.describe('smoke - build + display floor', () => {
     await expect(page.locator('.dept-card.dept-centered')).toHaveCount(1)
     await expect(page.locator('.dept-card.dept-centered .dept-name')).toHaveText('Automation')
 
-    // Its three finalized metrics render.
+    // Its rows render: the new Requests row (data-driven, neutral) + the three
+    // threshold rows.
     await expect(auto.locator('.metric-name')).toContainText(
-      ['Turnaround', 'Incident Resolve', 'Error Rate']
+      ['Requests', 'Turnaround', 'Incident Resolve', 'Error Rate']
     )
 
     // Threshold coloring is live: the fixture spans green/yellow/red bands, so all three

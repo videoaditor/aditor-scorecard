@@ -28,7 +28,8 @@ const METRICS = {
   // Automation (Shawn) - finalized green/yellow/red thresholds encoded here.
   autoTurnaround: { name: 'Turnaround',       icon: '🔄', unit: 'd',  dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
   autoIncident:   { name: 'Incident Resolve', icon: '🚨', unit: 'h',  dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
-  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Unblocked n8n error incidents per week. green <=1, yellow 2-3, red >3' },
+  autoErrorRate:  { name: 'Error Rate',       icon: '⚠️', unit: '',   dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3' },
+  automationRequests: { name: 'Requests',     icon: '📥', unit: '',   dir: 'higher', neutral: true, agg: 'sum', desc: 'Total weekly automation/feature requests into the pipeline (from meetings + Slack). Neutral - thresholds TBD from the captain.' },
 }
 
 const DRI = {
@@ -44,7 +45,7 @@ const DEPARTMENTS = [
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
-  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['autoTurnaround', 'autoIncident', 'autoErrorRate'] },
+  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoIncident', 'autoErrorRate'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

@@ -18,6 +18,7 @@ const DIRECT_FIELDS = [
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
+  'automationRequests',
 ]
 
 // Renamed mappings: Teable field → internal key. The Automation metrics live on the

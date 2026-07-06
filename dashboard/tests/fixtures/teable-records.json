@@ -26,6 +26,7 @@
         "activeEditors": 12,
         "cardsPerEditor": 7,
         "clientCpl": 95,
+        "automationRequests": 14,
         "turnaround": 2,
         "incidentResolution": 10,
         "automationErrors": 1
@@ -57,6 +58,7 @@
         "activeEditors": 15,
         "cardsPerEditor": 9,
         "clientCpl": 78,
+        "automationRequests": 20,
         "turnaround": 5,
         "incidentResolution": 20,
         "automationErrors": 2
@@ -88,6 +90,7 @@
         "activeEditors": 13,
         "cardsPerEditor": 6,
         "clientCpl": 88,
+        "automationRequests": 16,
         "turnaround": 4,
         "incidentResolution": 15,
         "automationErrors": 2
@@ -119,6 +122,7 @@
         "activeEditors": 16,
         "cardsPerEditor": 10,
         "clientCpl": 72,
+        "automationRequests": 24,
         "turnaround": 8,
         "incidentResolution": 30,
         "automationErrors": 5
@@ -150,6 +154,7 @@
         "activeEditors": 15,
         "cardsPerEditor": 8,
         "clientCpl": 80,
+        "automationRequests": 19,
         "turnaround": 3,
         "incidentResolution": 12,
         "automationErrors": 1
