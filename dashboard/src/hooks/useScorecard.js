@@ -8,7 +8,7 @@ const TABLE_ID = import.meta.env.VITE_TEABLE_TABLE_ID || ''
 // Fields absent in Teable map to null (toNum), so the dashboard renders them as a
 // neutral placeholder instead of crashing - this is what keeps the pending metrics
 // (reach, hotDms, autoTurnaround, autoIncident, autoErrorRate) safe to ship before
-// their Teable pipelines feed values. See AGENTS.md > Deferred Teable fields.
+// their Teable pipelines feed values. See AGENTS.md > Teable schema fields status.
 // NOTE: `reach` is organic Instagram reach (written by the wire-ig-metrics collector).
 // It is NOT the paid-ads `impressions` field (owned by the disabled n8n paid-ads
 // workflow), which the dashboard intentionally no longer reads.

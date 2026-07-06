@@ -19,7 +19,8 @@
   },
 
   // Non-secret config. Secrets (INSTAGRAM_ADITOR_TOKEN, ANTHROPIC_API_KEY_ADITOR,
-  // TEABLE_CLOUD_GENERAL_ACCESS) are set out-of-band via `wrangler secret put` - see README.
+  // TEABLE_CLOUD_GENERAL_ACCESS) are set out-of-band via `wrangler secret put` - see
+  // AGENTS.md > IG metrics collector.
   "vars": {
     "TEABLE_CLOUD_BASE_URL": "https://app.teable.ai",
     "TEABLE_TABLE_ID": "tbl7295480347s6oVaI",
