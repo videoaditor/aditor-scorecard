@@ -23,13 +23,15 @@ const DIRECT_FIELDS = [
 ]
 
 // Renamed mappings: Teable field → internal key. The Automation metrics live on the
-// scorecard table as `turnaround` / `incidentResolution` / `automationErrors` (NOT the
+// scorecard table as `turnaroundTime` / `incidentResolution` / `criticalErrors` (NOT the
 // dashboard's `auto*` display keys); map them so real Automation data actually renders.
+// The Teable fields were renamed 2026-07-07 when the n8n automations took over writing
+// them (previously `turnaround` / `automationErrors`).
 const RENAMED_FIELDS = {
   clientCpl: 'cpl',
-  turnaround: 'autoTurnaround',
+  turnaroundTime: 'autoTurnaround',
   incidentResolution: 'autoIncident',
-  automationErrors: 'autoErrorRate',
+  criticalErrors: 'autoErrorRate',
 }
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages

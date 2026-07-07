@@ -28,9 +28,9 @@
         "clientCpl": 95,
         "automationRequests": 14,
         "automationRequestsDone": 14,
-        "turnaround": 2,
+        "turnaroundTime": 2,
         "incidentResolution": 10,
-        "automationErrors": 1
+        "criticalErrors": 1
       }
     },
     {
@@ -61,9 +61,9 @@
         "clientCpl": 78,
         "automationRequests": 20,
         "automationRequestsDone": 15,
-        "turnaround": 5,
+        "turnaroundTime": 5,
         "incidentResolution": 20,
-        "automationErrors": 2
+        "criticalErrors": 2
       }
     },
     {
@@ -94,9 +94,9 @@
         "clientCpl": 88,
         "automationRequests": 16,
         "automationRequestsDone": 16,
-        "turnaround": 4,
+        "turnaroundTime": 4,
         "incidentResolution": 15,
-        "automationErrors": 2
+        "criticalErrors": 2
       }
     },
     {
@@ -127,9 +127,9 @@
         "clientCpl": 72,
         "automationRequests": 24,
         "automationRequestsDone": 12,
-        "turnaround": 8,
+        "turnaroundTime": 8,
         "incidentResolution": 30,
-        "automationErrors": 5
+        "criticalErrors": 5
       }
     },
     {
@@ -160,9 +160,9 @@
         "clientCpl": 80,
         "automationRequests": 19,
         "automationRequestsDone": 8,
-        "turnaround": 3,
+        "turnaroundTime": 3,
         "incidentResolution": 12,
-        "automationErrors": 1
+        "criticalErrors": 1
       }
     },
     {
