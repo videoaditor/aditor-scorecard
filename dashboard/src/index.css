@@ -850,3 +850,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Expandable metric (Review Index → breakdown) */
+.metric-row-expandable .metric-label { cursor: pointer; }
+.metric-row-expandable:hover { background: rgba(255, 255, 255, 0.05); }
+.metric-caret {
+  display: inline-block;
+  font-size: 9px;
+  color: var(--text-dim);
+  opacity: 0.65;
+  transition: transform 0.15s ease;
+  margin-right: -2px;
+}
+.metric-caret.open { transform: rotate(90deg); }
+.metric-row-sub { background: transparent; }
+.metric-row-sub .metric-label { padding-left: 22px; }
+.metric-row-sub .metric-name { font-size: 11px; opacity: 0.72; }
+.metric-row-sub .metric-icon { font-size: 12px; opacity: 0.6; }
+.metric-row-sub .metric-value { opacity: 0.85; }

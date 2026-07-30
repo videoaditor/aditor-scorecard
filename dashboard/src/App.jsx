@@ -9,7 +9,12 @@ const METRICS = {
   mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', desc: 'Monthly recurring revenue from Stripe' },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum', desc: 'Total cards completed derived from Trello' },
   cardsPerEditor: { name: 'Cards/Editor',        icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg', desc: 'Average cards completed per editor' },
-  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', desc: 'Avg. delivery time active \u2192 completed in hours' },
+  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', notIncentivized: true, desc: 'Avg. delivery time active \u2192 completed in hours. Shown for context on the CX card; NOT part of the CX incentive/green-week \u2014 delivery has many drivers beyond the tools (editor submission, revisions).' },
+  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.7, yellow: 0.5, agg: 'avg', breakdown: ['craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability'], desc: 'Auto Reviewer composite. review index = craft score / 10 \u2212 client revision rate. 1.0 = perfect. Data pending: needs the tool to emit reliability + client-revision-rate into Teable. Craft score IS in the index (Alan, CX call: overview = craft + client-revision); auto-review revision rate + reliability are tracked alongside, not in the index.' },
+  craftScore:     { name: 'Craft Score',         icon: '🎨', unit: '',   dir: 'higher', green: 7,   yellow: 5,  agg: 'avg', desc: 'Avg editor craft score (÷10), IN the index per Alan (CX call). Reflects editing craft; read revisions + reliability alongside it.' },
+  clientRevisionRate: { name: 'Client Revision Rate', icon: '↩️', unit: '%', dir: 'lower', green: 20, yellow: 40, agg: 'avg', desc: 'Client change-requests after the tool passed a video — brief-misses only (mind-changes excluded). Subtracted in the index. Primary quality signal. Data pending.' },
+  autoReviewRevisionRate: { name: 'Auto-Review Revision Rate', icon: '🔁', unit: '%', dir: 'lower', green: 35, yellow: 55, agg: 'avg', desc: 'Rejected uploads ÷ all uploads (internal), weighted × (1 + editor growth). Tracked alongside; not in the index. Data pending.' },
+  reliability:    { name: 'Reliability',          icon: '🛡️', unit: '%', dir: 'higher', green: 90, yellow: 80, agg: 'avg', desc: 'Tool runs without error, per ATTEMPT (events clustered per file/15min; a partly-failed submission = 0%, not a free 50%). Saskia’s metric, tracked alongside. Launch threshold deliberately forgiving — the real baseline is unknown (failures only captured from 2026-07-30; earlier weeks read an artificial 100%).' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum', desc: 'Client wins from Slack #wins channel' },
   applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum', desc: 'Editor applicants from email' },
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
@@ -18,7 +23,7 @@ const METRICS = {
   followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 50, agg: 'sum', desc: 'Weekly net Instagram follower change from Meta API (Tobias). green >=100, yellow 50-99, red <50 (thresholds set 2026-07)' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
-  acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', desc: 'New subscribers / test starts' },
+  acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', notIncentivized: true, desc: 'New subscribers / test starts' },
 
   // Marketing (Tobias) - IG collector metrics, banded like IG Posts. Thresholds were set
   // 2026-07; do not auto-adjust. Raw values drive banding; display is k-notation.
@@ -44,7 +49,7 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'reach', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'cs',         name: 'CX', icon: '⭐', color: '#F59E0B', metrics: ['reviewIndex', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
 ]
@@ -221,47 +226,54 @@ const Avatar = ({ person }) => (
   </div>
 )
 
-const MetricRow = ({ metricKey, columns, view }) => {
+const MetricRow = ({ metricKey, columns, view, sub = false }) => {
   const m = METRICS[metricKey]
+  const [expanded, setExpanded] = useState(false)
   if (!m) return null
-  
+  const hasBreakdown = Array.isArray(m.breakdown) && m.breakdown.length > 0
+
+  const cells = columns.map((col, i) => {
+    if (col.empty) {
+      return (
+        <div key={i} className="metric-cell empty-cell">
+          <span className="metric-value status-text-neutral">—</span>
+        </div>
+      )
+    }
+    const val = col[metricKey]
+    const isCurrent = col.isCurrent
+    const isTotal = col.isTotal
+    const filledWeeks = isTotal
+      ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
+      : 1
+    const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
+    const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
+    return (
+      <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+        <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
+      </div>
+    )
+  })
+
   return (
-    <div className="metric-row">
-      <div className="metric-label" data-tooltip={m.desc}>
-        <span className="metric-icon">{m.icon}</span>
-        <span className="metric-name">{m.name}</span>
+    <>
+      <div className={`metric-row${sub ? ' metric-row-sub' : ''}${hasBreakdown ? ' metric-row-expandable' : ''}`}>
+        <div
+          className="metric-label"
+          data-tooltip={m.desc}
+          onClick={hasBreakdown ? () => setExpanded(e => !e) : undefined}
+          style={hasBreakdown ? { cursor: 'pointer' } : undefined}
+        >
+          {hasBreakdown && <span className={`metric-caret${expanded ? ' open' : ''}`}>▸</span>}
+          <span className="metric-icon">{m.icon}</span>
+          <span className="metric-name">{m.name}</span>
+        </div>
+        <div className="metric-values">{cells}</div>
       </div>
-      <div className="metric-values">
-        {columns.map((col, i) => {
-          if (col.empty) {
-            return (
-              <div key={i} className="metric-cell empty-cell">
-                <span className="metric-value status-text-neutral">—</span>
-              </div>
-            )
-          }
-          const val = col[metricKey]
-          const isCurrent = col.isCurrent
-          const isTotal = col.isTotal
-          // For total column, scale sum thresholds by number of filled weeks
-          // Scale sum-metric total thresholds by the weeks that actually have data for THIS
-          // metric (not every non-empty column). Otherwise a just-started metric with one
-          // real week (e.g. reach/hotDms KW27) is judged against an N-week-scaled bar and the
-          // total mis-bands (a green week under a red total).
-          const filledWeeks = isTotal
-            ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
-            : 1
-          const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
-          const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
-          
-          return (
-            <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
-              <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+      {hasBreakdown && expanded && m.breakdown.map(subKey => (
+        <MetricRow key={subKey} metricKey={subKey} columns={columns} view={view} sub />
+      ))}
+    </>
   )
 }
 
