@@ -33,7 +33,7 @@ test.describe('smoke - build + display floor', () => {
     // Five department cards render, in order, from the mocked Teable feed.
     await expect(page.locator('.dept-card')).toHaveCount(5)
     await expect(page.locator('.dept-name')).toHaveText(
-      ['Marketing', 'Sales', 'Customer Success', 'People', 'Automation']
+      ['Marketing', 'Sales', 'CX', 'People', 'Automation']
     )
 
     // Data actually flowed through the mapping: at least one metric cell shows a number.
@@ -86,7 +86,7 @@ test.describe('smoke - build + display floor', () => {
     // Owners: Marketing = Tobias, Automation = Shawn; Baran no longer appears anywhere.
     await expect(deptCard(page, 'Marketing').locator('.dri-name')).toHaveText('Tobias')
     await expect(deptCard(page, 'Automation').locator('.dri-name')).toHaveText('Shawn')
-    await expect(deptCard(page, 'Customer Success').locator('.dri-name')).toHaveText('Saskia')
+    await expect(deptCard(page, 'CX').locator('.dri-name')).toHaveText('Saskia')
     await expect(page.getByText('Baran')).toHaveCount(0)
   })
 
