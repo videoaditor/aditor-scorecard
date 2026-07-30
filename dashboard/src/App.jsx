@@ -10,7 +10,11 @@ const METRICS = {
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum', desc: 'Total cards completed derived from Trello' },
   cardsPerEditor: { name: 'Cards/Editor',        icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg', desc: 'Average cards completed per editor' },
   delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', notIncentivized: true, desc: 'Avg. delivery time active \u2192 completed in hours. Shown for context on the CX card; NOT part of the CX incentive/green-week \u2014 delivery has many drivers beyond the tools (editor submission, revisions).' },
-  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.8, yellow: 0.6, agg: 'avg', desc: 'Auto Reviewer composite. review index = craft score / 10 \u2212 client revision rate. 1.0 = perfect. Data pending: needs the tool to emit reliability + client-revision-rate into Teable. Open question: is craft score in the index or view-only (education mix)?' },
+  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.8, yellow: 0.6, agg: 'avg', breakdown: ['craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability'], desc: 'Auto Reviewer composite. review index = craft score / 10 \u2212 client revision rate. 1.0 = perfect. Data pending: needs the tool to emit reliability + client-revision-rate into Teable. Open question: is craft score in the index or view-only (education mix)?' },
+  craftScore:     { name: 'Craft Score',         icon: '🎨', unit: '',   dir: 'higher', green: 8,   yellow: 6,  agg: 'avg', desc: 'Avg editor craft score (÷10 feeds the index). Note: mixes in editor education — open question whether it belongs in the index.' },
+  clientRevisionRate: { name: 'Client Revision Rate', icon: '↩️', unit: '%', dir: 'lower', green: 10, yellow: 25, agg: 'avg', desc: 'Client change-requests after the tool passed a video — brief-misses only (mind-changes excluded). Subtracted in the index. Primary quality signal. Data pending.' },
+  autoReviewRevisionRate: { name: 'Auto-Review Revision Rate', icon: '🔁', unit: '%', dir: 'lower', green: 20, yellow: 40, agg: 'avg', desc: 'Rejected uploads ÷ all uploads (internal), weighted × (1 + editor growth). Tracked alongside; not in the index. Data pending.' },
+  reliability:    { name: 'Reliability',          icon: '🛡️', unit: '%', dir: 'higher', green: 99, yellow: 95, agg: 'avg', desc: 'Tool runs without error (successful ÷ attempts). Saskia’s metric. Tracked alongside; separate from revisions. Data pending.' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum', desc: 'Client wins from Slack #wins channel' },
   applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum', desc: 'Editor applicants from email' },
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
@@ -222,47 +226,54 @@ const Avatar = ({ person }) => (
   </div>
 )
 
-const MetricRow = ({ metricKey, columns, view }) => {
+const MetricRow = ({ metricKey, columns, view, sub = false }) => {
   const m = METRICS[metricKey]
+  const [expanded, setExpanded] = useState(false)
   if (!m) return null
-  
+  const hasBreakdown = Array.isArray(m.breakdown) && m.breakdown.length > 0
+
+  const cells = columns.map((col, i) => {
+    if (col.empty) {
+      return (
+        <div key={i} className="metric-cell empty-cell">
+          <span className="metric-value status-text-neutral">—</span>
+        </div>
+      )
+    }
+    const val = col[metricKey]
+    const isCurrent = col.isCurrent
+    const isTotal = col.isTotal
+    const filledWeeks = isTotal
+      ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
+      : 1
+    const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
+    const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
+    return (
+      <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+        <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
+      </div>
+    )
+  })
+
   return (
-    <div className="metric-row">
-      <div className="metric-label" data-tooltip={m.desc}>
-        <span className="metric-icon">{m.icon}</span>
-        <span className="metric-name">{m.name}</span>
+    <>
+      <div className={`metric-row${sub ? ' metric-row-sub' : ''}${hasBreakdown ? ' metric-row-expandable' : ''}`}>
+        <div
+          className="metric-label"
+          data-tooltip={m.desc}
+          onClick={hasBreakdown ? () => setExpanded(e => !e) : undefined}
+          style={hasBreakdown ? { cursor: 'pointer' } : undefined}
+        >
+          {hasBreakdown && <span className={`metric-caret${expanded ? ' open' : ''}`}>▸</span>}
+          <span className="metric-icon">{m.icon}</span>
+          <span className="metric-name">{m.name}</span>
+        </div>
+        <div className="metric-values">{cells}</div>
       </div>
-      <div className="metric-values">
-        {columns.map((col, i) => {
-          if (col.empty) {
-            return (
-              <div key={i} className="metric-cell empty-cell">
-                <span className="metric-value status-text-neutral">—</span>
-              </div>
-            )
-          }
-          const val = col[metricKey]
-          const isCurrent = col.isCurrent
-          const isTotal = col.isTotal
-          // For total column, scale sum thresholds by number of filled weeks
-          // Scale sum-metric total thresholds by the weeks that actually have data for THIS
-          // metric (not every non-empty column). Otherwise a just-started metric with one
-          // real week (e.g. reach/hotDms KW27) is judged against an N-week-scaled bar and the
-          // total mis-bands (a green week under a red total).
-          const filledWeeks = isTotal
-            ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
-            : 1
-          const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
-          const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
-          
-          return (
-            <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
-              <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+      {hasBreakdown && expanded && m.breakdown.map(subKey => (
+        <MetricRow key={subKey} metricKey={subKey} columns={columns} view={view} sub />
+      ))}
+    </>
   )
 }
 
