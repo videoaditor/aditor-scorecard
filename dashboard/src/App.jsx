@@ -9,7 +9,8 @@ const METRICS = {
   mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', desc: 'Monthly recurring revenue from Stripe' },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum', desc: 'Total cards completed derived from Trello' },
   cardsPerEditor: { name: 'Cards/Editor',        icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg', desc: 'Average cards completed per editor' },
-  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', desc: 'Avg. delivery time active \u2192 completed in hours' },
+  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', notIncentivized: true, desc: 'Avg. delivery time active \u2192 completed in hours. Shown for context on the CX card; NOT part of the CX incentive/green-week \u2014 delivery has many drivers beyond the tools (editor submission, revisions).' },
+  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.8, yellow: 0.6, agg: 'avg', desc: 'Auto Reviewer composite. review index = craft score / 10 \u2212 client revision rate. 1.0 = perfect. Data pending: needs the tool to emit reliability + client-revision-rate into Teable. Open question: is craft score in the index or view-only (education mix)?' },
   wins:           { name: 'Client Wins',       icon: '🏆', unit: '',   dir: 'higher', green: 5,   yellow: 3, agg: 'sum', desc: 'Client wins from Slack #wins channel' },
   applicants:     { name: 'Applicants',        icon: '📋', unit: '',   dir: 'higher', green: 50,  yellow: 20, agg: 'sum', desc: 'Editor applicants from email' },
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
@@ -44,7 +45,7 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'reach', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',         name: 'Customer Success', icon: '⭐', color: '#F59E0B', metrics: ['cardsDone', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'cs',         name: 'CX', icon: '⭐', color: '#F59E0B', metrics: ['reviewIndex', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
 ]
