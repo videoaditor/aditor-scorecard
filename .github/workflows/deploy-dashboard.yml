@@ -1,0 +1,98 @@
+name: Deploy dashboard
+
+# Push-to-deploy for score.aditor.ai. Replaces the out-of-band `npm run deploy`
+# (gh-pages) that previously had to be run by hand from a machine holding
+# dashboard/.env, which made every merge wait on one person.
+#
+# The Teable read credentials are repo secrets (VITE_TEABLE_URL /
+# VITE_TEABLE_TOKEN / VITE_TEABLE_TABLE_ID) because Vite inlines them at build
+# time. They are the same read-scoped values that already ship inside the public
+# bundle; see AGENTS.md > Security note.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'dashboard/**'
+      - '.github/workflows/deploy-dashboard.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Install Chromium
+        working-directory: dashboard
+        run: npx playwright install --with-deps chromium
+
+      # The gate: build the hermetic test bundle (.env.test placeholders, every
+      # network boundary mocked) and drive it with Playwright. A red suite stops
+      # the deploy before the production build ever runs.
+      - name: E2E gate
+        working-directory: dashboard
+        run: |
+          npm run build -- --mode test
+          npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: dashboard/playwright-report/
+          retention-days: 7
+
+      - name: Build production bundle
+        working-directory: dashboard
+        env:
+          VITE_TEABLE_URL: ${{ secrets.VITE_TEABLE_URL }}
+          VITE_TEABLE_TOKEN: ${{ secrets.VITE_TEABLE_TOKEN }}
+          VITE_TEABLE_TABLE_ID: ${{ secrets.VITE_TEABLE_TABLE_ID }}
+        run: |
+          if [ -z "$VITE_TEABLE_URL" ] || [ -z "$VITE_TEABLE_TOKEN" ] || [ -z "$VITE_TEABLE_TABLE_ID" ]; then
+            echo "::error::Missing VITE_TEABLE_* repo secret. Refusing to publish a bundle that would render empty."
+            exit 1
+          fi
+          npm run build
+
+      # Publish to the gh-pages branch (Pages source: gh-pages, path /), keeping
+      # its deploy history. CNAME ships from dashboard/public; .nojekyll is added
+      # here so Pages serves the Vite asset paths verbatim.
+      - name: Publish to gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -f dashboard/dist/CNAME || { echo "::error::dist/CNAME missing, refusing to publish and drop the custom domain."; exit 1; }
+          git clone --depth 1 --branch gh-pages \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/pages
+          rsync -a --delete --exclude '.git' dashboard/dist/ /tmp/pages/
+          touch /tmp/pages/.nojekyll
+          cd /tmp/pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No change in built output, nothing to publish."
+            exit 0
+          fi
+          git commit -m "deploy: ${GITHUB_SHA::7} ($(git -C "${GITHUB_WORKSPACE}" log -1 --pretty=%s))"
+          git push origin gh-pages
