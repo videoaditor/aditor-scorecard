@@ -76,6 +76,15 @@ jobs:
       # Publish to the gh-pages branch (Pages source: gh-pages, path /), keeping
       # its deploy history. CNAME ships from dashboard/public; .nojekyll is added
       # here so Pages serves the Vite asset paths verbatim.
+      #
+      # The publish tree is emptied and refilled rather than synced. `rsync -a`
+      # was wrong here and shipped a broken site once (2026-07-31): its default
+      # quick check is size+mtime, and index.html is always the SAME size across
+      # builds (asset hashes are fixed-length), so when the build and the clone
+      # landed in the same whole second rsync skipped it. The result published
+      # new hashed assets next to an index.html still pointing at the deleted
+      # old ones - a blank page, from a green run. Never reintroduce a
+      # heuristic file comparison here; the hashed-asset layout defeats it.
       - name: Publish to gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,8 +93,22 @@ jobs:
           test -f dashboard/dist/CNAME || { echo "::error::dist/CNAME missing, refusing to publish and drop the custom domain."; exit 1; }
           git clone --depth 1 --branch gh-pages \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/pages
-          rsync -a --delete --exclude '.git' dashboard/dist/ /tmp/pages/
+          find /tmp/pages -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -R dashboard/dist/. /tmp/pages/
           touch /tmp/pages/.nojekyll
+
+          # Integrity gate: every local file index.html points at must exist in
+          # the tree being published. This is what catches a stale-index deploy
+          # before users do.
+          missing=$(grep -oE '(src|href)="/[^"]+"' /tmp/pages/index.html \
+            | sed -E 's/^[a-z]+="\/([^"]+)"$/\1/' \
+            | while read -r f; do [ -f "/tmp/pages/$f" ] || echo "  $f"; done)
+          if [ -n "$missing" ]; then
+            echo "::error::index.html references files that are not in the publish tree:"
+            echo "$missing"
+            exit 1
+          fi
+
           cd /tmp/pages
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
