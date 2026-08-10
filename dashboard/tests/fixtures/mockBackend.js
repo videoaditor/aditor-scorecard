@@ -60,8 +60,12 @@ async function handledPreflight(route) {
 /**
  * Install the boundary fake + the hard rail on `page`. Call once per test, BEFORE
  * navigation. Returns a live transcript the test asserts against.
+ *
+ * `records` overrides the shared fixture for specs that need a purpose-built feed (e.g.
+ * aggregation.spec.js pins the exact weekly shape a rollup bug was found on). It must have
+ * the same `{records: [{fields}]}` shape the Teable endpoint returns.
  */
-export async function installMockBackend(page) {
+export async function installMockBackend(page, records = teableRecords) {
   const transcript = {
     teableFetches: 0,
     railViolations: [], // {method, url} for any non-localhost request that escaped the mocks
@@ -100,7 +104,7 @@ export async function installMockBackend(page) {
     async (route) => {
       if (await handledPreflight(route)) return
       transcript.teableFetches += 1
-      await fulfillJson(route, teableRecords)
+      await fulfillJson(route, records)
     }
   )
 
@@ -112,12 +116,13 @@ export async function installMockBackend(page) {
 export const FIXED_TIME = '2026-02-15T12:00:00+01:00'
 
 /**
- * Pin the page clock, then navigate. Pinning BEFORE goto is what makes the app's many
+ * Pin the page clock, then navigate. `time` defaults to FIXED_TIME; pass another instant
+ * when a spec's fixture is aligned to a different month. Pinning BEFORE goto is what makes the app's many
  * wall-clock reads (current-week highlight, month/quarter defaults, the 5-min refresh
  * interval) deterministic. See AGENTS.md > Determinism.
  */
-export async function gotoPinned(page, path = '/') {
-  await page.clock.install({ time: FIXED_TIME })
+export async function gotoPinned(page, path = '/', time = FIXED_TIME) {
+  await page.clock.install({ time })
   await page.goto(path)
   // Neutralize CSS animation/transition so the UI is deterministic for Playwright and
   // screenshots are crisp. It has no effect on app logic. The rule applies to current and

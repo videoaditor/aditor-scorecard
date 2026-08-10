@@ -13,3 +13,6 @@ README.md
 dashboard/test-results/
 dashboard/playwright-report/
 dashboard/playwright/.cache/
+
+# Vite dep-optimizer cache (transient, created by any local build)
+dashboard/.vite/

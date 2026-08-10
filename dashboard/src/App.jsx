@@ -32,9 +32,18 @@ const METRICS = {
 
   // Automation (Shawn) - finalized green/yellow/red thresholds. "Requests Done" is a
   // done/incoming completion ratio (frac) colored by percent, like Acquisition Rate.
-  autoTurnaround: { name: 'Turnaround Time',  icon: '🔄', unit: 'd',    dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
-  autoIncident:   { name: 'Resolve Time',     icon: '🚨', unit: 'h',    dir: 'lower',  green: 12, yellow: 24, agg: 'avg', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
-  autoErrorRate:  { name: 'Critical Errors',  icon: '⚠️', unit: '',     dir: 'lower',  green: 1,  yellow: 3,  agg: 'avg', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3' },
+  // Turnaround and Resolve Time are per-week AVERAGES over a cohort, so rolling them up
+  // needs a weighted mean (`weightBy` = the row field holding that week's cohort size).
+  // An unweighted mean of weekly means over-weights quiet weeks: 3.1d over 4 deliveries
+  // and 4.5d over 2 is 3.6d, not 3.8d. Resolve Time is weighted by the week's incident
+  // count, which is exactly its cohort whenever every incident reported that week was
+  // also resolved, and a close proxy when one is still open.
+  autoTurnaround: { name: 'Turnaround Time',  icon: '🔄', unit: 'd',    dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', weightBy: 'automationRequestsDone', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
+  autoIncident:   { name: 'Resolve Time',     icon: '🚨', unit: 'h',    dir: 'lower',  green: 12, yellow: 24, agg: 'avg', weightBy: 'autoErrorRate', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
+  // A COUNT of incidents, so it SUMS across weeks (it was 'avg' until 2026-08-10, which
+  // rendered a monthly total of "1.5 critical errors"). Thresholds are per week and are
+  // scaled by the number of weeks in the total - see getStatus.
+  autoErrorRate:  { name: 'Critical Errors',  icon: '⚠️', unit: '',     dir: 'lower',  green: 1,  yellow: 3,  agg: 'sum', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3 per week' },
   automationRequests: { name: 'Requests Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Automation/feature requests completed vs incoming this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
 }
 
@@ -86,6 +95,42 @@ const filterByQuarter = (weeks, quarter, year) => {
   })
 }
 
+// Row fields used only as weights for a weighted mean (see METRICS.weightBy). They are
+// not metrics themselves, so month columns have to carry them explicitly or a quarter-view
+// rollup would silently fall back to an unweighted mean.
+const WEIGHT_FIELDS = [...new Set(Object.values(METRICS).map(m => m.weightBy).filter(Boolean))]
+
+const numeric = (v) => v !== null && v !== undefined && !isNaN(Number(v))
+
+// Mean of an average-metric across columns, weighted by each column's cohort size when the
+// metric declares one. Columns missing the weight count as 1 rather than dropping out.
+const weightedAvg = (cols, key, weightBy) => {
+  let num = 0, den = 0
+  cols.forEach(c => {
+    if (!numeric(c[key])) return
+    const raw = weightBy ? Number(c[weightBy]) : NaN
+    const w = (Number.isFinite(raw) && raw > 0) ? raw : 1
+    num += Number(c[key]) * w
+    den += w
+  })
+  return den === 0 ? null : Math.round((num / den) * 10) / 10
+}
+
+const sumOf = (cols, key) => {
+  const vals = cols.map(c => c[key]).filter(numeric).map(Number)
+  return vals.length === 0 ? null : vals.reduce((a, b) => a + b, 0)
+}
+
+// Roll a set of "num/den" cells into one. Null when no column carried the metric at all,
+// so a month that predates the metric renders "—" instead of a misleading "0/0".
+const sumFrac = (cols, key) => {
+  const vals = cols.map(c => c[key]).filter(v => v !== null && v !== undefined)
+  if (vals.length === 0) return null
+  let num = 0, den = 0
+  vals.forEach(v => { const [n, d] = String(v).split('/').map(Number); num += (n || 0); den += (d || 0) })
+  return `${num}/${den}`
+}
+
 // Aggregate weeks into monthly data for quarter view
 const aggregateToMonths = (weeks, quarter, year) => {
   const startMonth = quarter * 3
@@ -105,19 +150,23 @@ const aggregateToMonths = (weeks, quarter, year) => {
         const m = METRICS[key]
         const vals = monthWeeks.map(w => w[key]).filter(v => v !== null && v !== undefined)
         if (m.agg === 'frac') {
-          // Sum numerator/denominator parts across weeks
-          let num = 0, den = 0
-          vals.forEach(v => { const [n, d] = String(v).split('/').map(Number); num += (n||0); den += (d||0) })
-          agg[key] = `${num}/${den}`
+          agg[key] = sumFrac(monthWeeks, key)
         } else if (vals.length === 0) {
           agg[key] = null
         } else if (m.agg === 'sum') {
-          agg[key] = vals.reduce((a, b) => a + b, 0)
+          agg[key] = sumOf(monthWeeks, key)
         } else if (m.agg === 'avg') {
-          agg[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
+          // Same weighted mean and same 1-decimal precision as the Total column; a bare
+          // Math.round here used to turn 3.1d into "3d" in quarter view only.
+          agg[key] = weightedAvg(monthWeeks, key, m.weightBy)
         } else if (m.agg === 'last') {
           agg[key] = vals[vals.length - 1]
         }
+      })
+      // Carry weight fields that are not metrics themselves into the month column.
+      WEIGHT_FIELDS.forEach(f => {
+        if (f in agg) return
+        agg[f] = sumOf(monthWeeks, f)
       })
       // Check if this month is current (in progress)
       const today = new Date()
@@ -136,18 +185,15 @@ const addTotalColumn = (columns) => {
   Object.keys(METRICS).forEach(key => {
     const m = METRICS[key]
     if (m.agg === 'frac') {
-      const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined)
-      let num = 0, den = 0
-      vals.forEach(v => { const [n, d] = String(v).split('/').map(Number); num += (n||0); den += (d||0) })
-      total[key] = vals.length === 0 ? null : `${num}/${den}`
+      total[key] = sumFrac(filled, key)
     } else {
-      const vals = filled.map(w => w[key]).filter(v => v !== null && v !== undefined && !isNaN(Number(v)))
+      const vals = filled.map(w => w[key]).filter(numeric)
       if (vals.length === 0) {
         total[key] = null
       } else if (m.agg === 'sum') {
-        total[key] = vals.reduce((a, b) => Number(a) + Number(b), 0)
+        total[key] = sumOf(filled, key)
       } else if (m.agg === 'avg') {
-        total[key] = Math.round(vals.reduce((a, b) => Number(a) + Number(b), 0) / vals.length * 10) / 10
+        total[key] = weightedAvg(filled, key, m.weightBy)
       } else if (m.agg === 'last') {
         total[key] = vals[vals.length - 1]
       }
@@ -171,15 +217,17 @@ const getStatus = (value, key, weekCount = 1) => {
     const pct = (n / d) * 100
     return pct >= m.green ? 'green' : pct >= m.yellow ? 'yellow' : 'red'
   }
-  // Scale thresholds for sum metrics when showing totals across multiple weeks
+  // Scale thresholds for sum metrics when showing totals across multiple weeks. This has
+  // to apply in BOTH directions: a 'lower' sum metric (Critical Errors) compared against a
+  // per-week threshold would go red on any total above 3, however many weeks it covers.
   const scale = (m.agg === 'sum') ? Math.max(1, weekCount) : 1
   if (m.dir === 'higher') {
     if (value >= m.green * scale) return 'green'
     if (value >= m.yellow * scale) return 'yellow'
     return 'red'
   } else {
-    if (value <= m.green) return 'green'
-    if (value <= m.yellow) return 'yellow'
+    if (value <= m.green * scale) return 'green'
+    if (value <= m.yellow * scale) return 'yellow'
     return 'red'
   }
 }
