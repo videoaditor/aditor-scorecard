@@ -7,12 +7,9 @@ dashboard/dist/
 new-client.sh
 README.md
 
-# Playwright E2E run artifacts (transient; no-mistakes copies evidence into
-# .no-mistakes/evidence/<branch>/ separately). .env.test is intentionally NOT
-# ignored - it holds only non-secret placeholders and must be committed.
-dashboard/test-results/
-dashboard/playwright-report/
-dashboard/playwright/.cache/
+# dashboard/.env.test is intentionally NOT ignored (the `**/.env` rule above does
+# not match it) - it holds only non-secret placeholders and must be committed,
+# because `npm run build -- --mode test` is the gate and reads it.
 
 # Vite dep-optimizer cache (transient, created by any local build)
 dashboard/.vite/

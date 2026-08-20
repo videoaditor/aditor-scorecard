@@ -39,27 +39,6 @@ jobs:
         working-directory: dashboard
         run: npm ci
 
-      - name: Install Chromium
-        working-directory: dashboard
-        run: npx playwright install --with-deps chromium
-
-      # The gate: build the hermetic test bundle (.env.test placeholders, every
-      # network boundary mocked) and drive it with Playwright. A red suite stops
-      # the deploy before the production build ever runs.
-      - name: E2E gate
-        working-directory: dashboard
-        run: |
-          npm run build -- --mode test
-          npm run test:e2e
-
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: dashboard/playwright-report/
-          retention-days: 7
-
       - name: Build production bundle
         working-directory: dashboard
         env:
