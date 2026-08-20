@@ -1,20 +1,28 @@
 name: Deploy dashboard
 
-# Push-to-deploy for score.aditor.ai. Replaces the out-of-band `npm run deploy`
-# (gh-pages) that previously had to be run by hand from a machine holding
-# dashboard/.env, which made every merge wait on one person.
+# Push-to-deploy for score.aditor.ai, and the ONLY way this site deploys.
+#
+# Pushing to master IS the deploy, from any machine with push access. It
+# replaced the out-of-band `npm run deploy` (gh-pages), which had to be run by
+# hand from the one machine holding dashboard/.env and made every merge wait on
+# one person; that script was deleted on 2026-08-20 so no machine is special any
+# more. Never reintroduce a local publish path: it builds from someone's private
+# .env and leaves gh-pages out of sync with master until the next push.
+#
+# Every push to master runs this, with no `paths:` filter on purpose. A build
+# that comes out byte-identical is cheap (~20s) and the publish step no-ops on
+# it, which is a better trade than the filter's old failure mode: a push that
+# missed `dashboard/**` silently deployed nothing and looked like a success.
 #
 # The Teable read credentials are repo secrets (VITE_TEABLE_URL /
 # VITE_TEABLE_TOKEN / VITE_TEABLE_TABLE_ID) because Vite inlines them at build
 # time. They are the same read-scoped values that already ship inside the public
-# bundle; see AGENTS.md > Security note.
+# bundle; see AGENTS.md > Security note. Keeping them server-side is what makes
+# any machine able to deploy without holding a credential.
 
 on:
   push:
     branches: [master]
-    paths:
-      - 'dashboard/**'
-      - '.github/workflows/deploy-dashboard.yml'
   workflow_dispatch:
 
 concurrency:
