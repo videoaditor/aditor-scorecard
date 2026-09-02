@@ -18,7 +18,7 @@ const DIRECT_FIELDS = [
   'calls', 'posts', 'followers', 'reach', 'hotDms',
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
-  'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor',
+  'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor', 'editorChurn',
   'automationRequests', 'automationRequestsDone',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
@@ -37,7 +37,8 @@ const RENAMED_FIELDS = {
 }
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages
-const RATIO_TO_PCT = new Set(['callBookRate', 'closeRate'])
+// (editorChurn is written by the "Fetch Editor Churn" n8n workflow as a fraction, like closeRate)
+const RATIO_TO_PCT = new Set(['callBookRate', 'closeRate', 'editorChurn'])
 
 const DATE_FIELDS = new Set(['start', 'end'])
 

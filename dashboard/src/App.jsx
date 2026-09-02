@@ -20,6 +20,7 @@ const METRICS = {
   newHires:       { name: 'New Hires',           icon: '🎯', unit: '',   dir: 'higher', green: 3,   yellow: 1, agg: 'sum', desc: 'New editors hired this week' },
   activeEditors:  { name: 'Active Editors',     icon: '👥', unit: '',   dir: 'higher', green: 15,  yellow: 10, agg: 'last', desc: 'Editors that completed at least 1 card last week' },
   goodEditors:    { name: 'Good Editors',      icon: '🌟', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'last', desc: 'Editors that completed at least 3 cards last week' },
+  editorChurn:    { name: 'Editor Churn',      icon: '📉', unit: '%',  dir: 'lower',  neutral: true, agg: 'last', desc: 'Active editors who completed no card in the last 90 days OR are no longer in Slack, divided by all active editors (retention). Point-in-time each week; thresholds pending.' },
   followers:      { name: 'Followers \u00b1',       icon: '📊', unit: '',   dir: 'higher', green: 100, yellow: 50, agg: 'sum', desc: 'Weekly net Instagram follower change from Meta API (Tobias). green >=100, yellow 50-99, red <50 (thresholds set 2026-07)' },
   callBookRate:   { name: 'Call Book Rate',   icon: '📅', unit: '%',  dir: 'higher', green: 20,  yellow: 10, agg: 'avg', desc: '% of leads that book a call' },
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
@@ -59,7 +60,7 @@ const DEPARTMENTS = [
   { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'reach', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'CX', icon: '⭐', color: '#F59E0B', metrics: ['reviewIndex', 'delivery', 'wins', 'acquisitionRate'] },
-  { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor'] },
+  { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
 ]
 
