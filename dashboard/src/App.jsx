@@ -69,10 +69,18 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 
 
+// Scorecard dates arrive as Berlin-local YYYY-MM-DD values. Parsing that format with
+// `new Date(value)` treats it as UTC and can move the local date across a month boundary.
+const parseScorecardDate = (value) => {
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return new Date(value)
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+}
+
 // Get month (0-11) and year from a week's start date
 const getMonthYear = (week) => {
   if (!week.start) return { month: -1, year: -1 }
-  const d = new Date(week.start)
+  const d = parseScorecardDate(week.start)
   return { month: d.getMonth(), year: d.getFullYear() }
 }
 
@@ -80,10 +88,11 @@ const getMonthYear = (week) => {
 const filterByMonth = (weeks, month, year) => {
   const monthStart = new Date(year, month, 1)
   const monthEnd = new Date(year, month + 1, 0) // last day of month
+  monthEnd.setHours(23, 59, 59, 999)
   return weeks.filter(w => {
     if (!w.start || !w.end) return false
-    const wStart = new Date(w.start)
-    const wEnd = new Date(w.end)
+    const wStart = parseScorecardDate(w.start)
+    const wEnd = parseScorecardDate(w.end)
     return wStart <= monthEnd && wEnd >= monthStart
   })
 }
@@ -449,8 +458,8 @@ function App() {
 
       // Process each week: add labels + current-week detection
       const processed = filtered.map((w) => {
-        const startDate = w.start ? new Date(w.start) : null
-        const endDate = w.end ? new Date(w.end) : null
+        const startDate = w.start ? parseScorecardDate(w.start) : null
+        const endDate = w.end ? parseScorecardDate(w.end) : null
         if (startDate) startDate.setHours(0, 0, 0, 0)
         if (endDate) endDate.setHours(23, 59, 59, 999)
         const todayNoon = new Date(today); todayNoon.setHours(12, 0, 0, 0)
