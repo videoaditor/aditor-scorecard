@@ -26,9 +26,10 @@ const METRICS = {
   costPerCall:    { name: 'Cost Per Call',    icon: '💵', unit: '€',  dir: 'lower',  green: 200, yellow: 400, agg: 'avg', desc: 'Ad spend per booked call' },
   acquisitionRate:{ name: 'Acquisition Rate', icon: '🎯', unit: 'frac', dir: 'higher', green: 60, yellow: 30, agg: 'frac', notIncentivized: true, desc: 'New subscribers / test starts' },
 
-  // Marketing (Tobias) - IG collector metrics, banded like IG Posts. Thresholds were set
-  // 2026-07; do not auto-adjust. Raw values drive banding; display is k-notation.
-  reach:          { name: 'Reach',            icon: '📡', unit: '',   dir: 'higher', green: 100000, yellow: 50000, agg: 'sum', desc: 'Organic weekly Instagram reach (unique accounts reached) from the IG collector. green >=100k, yellow 50-100k, red <50k (thresholds set 2026-07)' },
+  // Marketing (Tobias) - Instagram metrics. Average Reel Views is weighted by the number
+  // of reels published in each week so month and quarter rollups remain per-reel averages.
+  // No performance bands have been set yet, so values render neutrally.
+  avgReelViews:   { name: 'Avg. Reel Views',  icon: '▶️', unit: '',   dir: 'higher', agg: 'avg', weightBy: 'reelsPublished', neutral: true, desc: 'Average lifetime views, measured on Monday, for reels published during the previous week. Monthly and quarterly values are weighted by the number of reels published.' },
   hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (thresholds set 2026-07)' },
 
   // Automation (Shawn) - finalized green/yellow/red thresholds. "Requests Done" is a
@@ -57,7 +58,7 @@ const DRI = {
 }
 
 const DEPARTMENTS = [
-  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'reach', 'hotDms'] },
+  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'avgReelViews', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'CX', icon: '⭐', color: '#F59E0B', metrics: ['reviewIndex', 'delivery', 'wins', 'acquisitionRate'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
