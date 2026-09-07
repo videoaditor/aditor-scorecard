@@ -6,9 +6,8 @@ const TABLE_ID = import.meta.env.VITE_TEABLE_TABLE_ID || ''
 
 // Direct field mappings: Teable field name === internal key.
 // Fields absent in Teable map to null (toNum), so the dashboard renders them as a
-// neutral placeholder instead of crashing - this is what keeps just-added metrics
-// (avgReelViews, hotDms, automationRequests) safe to ship before their Teable pipelines
-// feed values. The Automation `auto*` metrics are wired via RENAMED_FIELDS below.
+// neutral placeholder instead of crashing. The Automation `auto*` metrics are wired via
+// RENAMED_FIELDS below.
 // See AGENTS.md > Teable schema fields status.
 const DIRECT_FIELDS = [
   'start', 'end',
