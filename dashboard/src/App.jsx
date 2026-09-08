@@ -349,8 +349,11 @@ const MetricRow = ({ metricKey, columns, view, sub = false }) => {
   )
 }
 
-const DeptCard = ({ dept, columns, view }) => (
-  <div className={`dept-card${dept.centered ? ' dept-centered' : ''}`} style={{ '--accent': dept.color }}>
+const DeptCard = ({ dept, columns, view }) => {
+  const hasSixWeeks = view === 'month' && columns.filter(col => !col.isTotal).length === 6
+
+  return (
+  <div className={`dept-card${dept.centered ? ' dept-centered' : ''}${hasSixWeeks ? ' six-week-layout' : ''}`} style={{ '--accent': dept.color }}>
     <div className="dept-header">
       <span className="dept-icon">{dept.icon}</span>
       <span className="dept-name">{dept.name}</span>
@@ -381,7 +384,8 @@ const DeptCard = ({ dept, columns, view }) => (
       </div>
     </div>
   </div>
-)
+  )
+}
 
 const HealthSummary = ({ columns }) => {
   let g = 0, y = 0, r = 0
