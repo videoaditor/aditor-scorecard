@@ -481,28 +481,23 @@ function App() {
         return { ...w, label: w.week ? `KW${w.week}` : '—', isCurrent }
       })
 
-      // Place weeks by their week number relative to the first week of the month
-      const firstWeek = processed.length > 0
-        ? Math.min(...processed.map(w => w.week))
-        : null
-      // Figure out how many ISO weeks overlap this month
-      const getISOWeek = (d) => {
-        const date = new Date(d); date.setHours(0, 0, 0, 0)
-        date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7))
-        const week1 = new Date(date.getFullYear(), 0, 4)
-        return 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+      const getChronologicalWeek = (date) => {
+        const monday = new Date(date)
+        monday.setHours(0, 0, 0, 0)
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7))
+        return Math.floor(Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate()) / (7 * 86400000))
       }
-      const monthFirstWeek = getISOWeek(new Date(year, month, 1))
-      const monthLastWeek = getISOWeek(new Date(year, month + 1, 0))
-      const totalSlots = monthLastWeek >= monthFirstWeek
-        ? monthLastWeek - monthFirstWeek + 1
-        : monthLastWeek + 52 - monthFirstWeek + 1 // year boundary
-      const baseWeek = firstWeek != null ? Math.min(firstWeek, monthFirstWeek) : monthFirstWeek
-      const slotCount = Math.max(totalSlots, processed.length > 0 ? Math.max(...processed.map(w => w.week)) - baseWeek + 1 : 0)
+      const weekPositions = processed.map(w => getChronologicalWeek(parseScorecardDate(w.start)))
+      const monthFirstWeek = getChronologicalWeek(new Date(year, month, 1))
+      const monthLastWeek = getChronologicalWeek(new Date(year, month + 1, 0))
+      const firstWeek = weekPositions.length > 0 ? Math.min(...weekPositions) : monthFirstWeek
+      const baseWeek = Math.min(firstWeek, monthFirstWeek)
+      const totalSlots = monthLastWeek - baseWeek + 1
+      const slotCount = Math.max(totalSlots, weekPositions.length > 0 ? Math.max(...weekPositions) - baseWeek + 1 : 0)
       const slots = Array.from({ length: slotCount }, () => ({ label: '—', empty: true }))
 
-      processed.forEach(w => {
-        const pos = w.week - baseWeek
+      processed.forEach((w, index) => {
+        const pos = weekPositions[index] - baseWeek
         if (pos >= 0 && pos < slots.length) slots[pos] = w
       })
 
