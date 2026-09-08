@@ -73,8 +73,22 @@ const QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
 // `new Date(value)` treats it as UTC and can move the local date across a month boundary.
 const parseScorecardDate = (value) => {
   const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!match) return new Date(value)
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  if (!match) {
+    throw new TypeError(`Invalid scorecard date "${String(value)}": expected a valid YYYY-MM-DD calendar date`)
+  }
+
+  const year = Number(match[1])
+  const month = Number(match[2]) - 1
+  const day = Number(match[3])
+  const date = new Date(0)
+  date.setHours(0, 0, 0, 0)
+  date.setFullYear(year, month, day)
+
+  if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) {
+    throw new TypeError(`Invalid scorecard date "${String(value)}": expected a valid YYYY-MM-DD calendar date`)
+  }
+
+  return date
 }
 
 // Get month (0-11) and year from a week's start date
