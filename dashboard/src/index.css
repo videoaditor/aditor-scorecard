@@ -868,3 +868,19 @@ body {
 .metric-row-sub .metric-name { font-size: 11px; opacity: 0.72; }
 .metric-row-sub .metric-icon { font-size: 12px; opacity: 0.6; }
 .metric-row-sub .metric-value { opacity: 0.85; }
+
+/* A calendar month can overlap six ISO weeks. On desktop, let regular week columns
+   shrink evenly while preserving the wider Total column inside the department card. */
+@media (min-width: 641px) {
+  .time-labels {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .time-label:not(.total-label),
+  .metric-cell:not(.total-cell) {
+    width: 64px;
+    min-width: 0;
+    flex: 1 1 64px;
+  }
+}
