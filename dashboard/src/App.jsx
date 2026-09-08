@@ -353,37 +353,37 @@ const DeptCard = ({ dept, columns, view }) => {
   const hasSixWeeks = view === 'month' && columns.filter(col => !col.isTotal).length === 6
 
   return (
-  <div className={`dept-card${dept.centered ? ' dept-centered' : ''}${hasSixWeeks ? ' six-week-layout' : ''}`} style={{ '--accent': dept.color }}>
-    <div className="dept-header">
-      <span className="dept-icon">{dept.icon}</span>
-      <span className="dept-name">{dept.name}</span>
-      <div className="dri-avatars">
-        {(DRI[dept.id] || []).map(p => <Avatar key={p.initials} person={p} />)}
-      </div>
-    </div>
-    <div className="dept-table">
-      <div className="time-headers">
-        <div className="time-label-spacer"></div>
-        <div className="time-labels">
-          {columns.map((col, i) => (
-            <div key={i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
-              {col.isTotal ? 'Total' : col.label}
-            </div>
-          ))}
+    <div className={`dept-card${dept.centered ? ' dept-centered' : ''}${hasSixWeeks ? ' six-week-layout' : ''}`} style={{ '--accent': dept.color }}>
+      <div className="dept-header">
+        <span className="dept-icon">{dept.icon}</span>
+        <span className="dept-name">{dept.name}</span>
+        <div className="dri-avatars">
+          {(DRI[dept.id] || []).map(p => <Avatar key={p.initials} person={p} />)}
         </div>
       </div>
-      <div className="dept-metrics">
-        {dept.metrics
-          .filter(k => {
-            const m = METRICS[k]
-            if (view === 'month' && m?.quarterOnly) return false
-            if (view === 'quarter' && m?.weekOnly) return false
-            return true
-          })
-          .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+      <div className="dept-table">
+        <div className="time-headers">
+          <div className="time-label-spacer"></div>
+          <div className="time-labels">
+            {columns.map((col, i) => (
+              <div key={i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
+                {col.isTotal ? 'Total' : col.label}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="dept-metrics">
+          {dept.metrics
+            .filter(k => {
+              const m = METRICS[k]
+              if (view === 'month' && m?.quarterOnly) return false
+              if (view === 'quarter' && m?.weekOnly) return false
+              return true
+            })
+            .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+        </div>
       </div>
     </div>
-  </div>
   )
 }
 
