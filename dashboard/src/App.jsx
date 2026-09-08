@@ -97,18 +97,12 @@ const getMonthYear = (week) => {
   return { month: d.getMonth(), year: d.getFullYear() }
 }
 
-// Filter weeks that overlap with the given month (start ≤ month-end AND end ≥ month-start)
-const filterByMonth = (weeks, month, year) => {
-  const monthStart = new Date(year, month, 1)
-  const monthEnd = new Date(year, month + 1, 0) // last day of month
-  monthEnd.setHours(23, 59, 59, 999)
-  return weeks.filter(w => {
-    if (!w.start || !w.end) return false
-    const wStart = parseScorecardDate(w.start)
-    const wEnd = parseScorecardDate(w.end)
-    return wStart <= monthEnd && wEnd >= monthStart
-  })
-}
+// Assign each week to the month in which its Monday start date falls. This keeps
+// month cards to the familiar four or five week columns without dropping boundary weeks.
+const filterByMonth = (weeks, month, year) => weeks.filter(w => {
+  const my = getMonthYear(w)
+  return my.month === month && my.year === year
+})
 
 // Filter weeks by quarter
 const filterByQuarter = (weeks, quarter, year) => {
@@ -349,43 +343,39 @@ const MetricRow = ({ metricKey, columns, view, sub = false }) => {
   )
 }
 
-const DeptCard = ({ dept, columns, view }) => {
-  const hasSixWeeks = view === 'month' && columns.filter(col => !col.isTotal).length === 6
-
-  return (
-    <div className={`dept-card${dept.centered ? ' dept-centered' : ''}${hasSixWeeks ? ' six-week-layout' : ''}`} style={{ '--accent': dept.color }}>
-      <div className="dept-header">
-        <span className="dept-icon">{dept.icon}</span>
-        <span className="dept-name">{dept.name}</span>
-        <div className="dri-avatars">
-          {(DRI[dept.id] || []).map(p => <Avatar key={p.initials} person={p} />)}
-        </div>
-      </div>
-      <div className="dept-table">
-        <div className="time-headers">
-          <div className="time-label-spacer"></div>
-          <div className="time-labels">
-            {columns.map((col, i) => (
-              <div key={i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
-                {col.isTotal ? 'Total' : col.label}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="dept-metrics">
-          {dept.metrics
-            .filter(k => {
-              const m = METRICS[k]
-              if (view === 'month' && m?.quarterOnly) return false
-              if (view === 'quarter' && m?.weekOnly) return false
-              return true
-            })
-            .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
-        </div>
+const DeptCard = ({ dept, columns, view }) => (
+  <div className={`dept-card${dept.centered ? ' dept-centered' : ''}`} style={{ '--accent': dept.color }}>
+    <div className="dept-header">
+      <span className="dept-icon">{dept.icon}</span>
+      <span className="dept-name">{dept.name}</span>
+      <div className="dri-avatars">
+        {(DRI[dept.id] || []).map(p => <Avatar key={p.initials} person={p} />)}
       </div>
     </div>
-  )
-}
+    <div className="dept-table">
+      <div className="time-headers">
+        <div className="time-label-spacer"></div>
+        <div className="time-labels">
+          {columns.map((col, i) => (
+            <div key={i} className={`time-label ${col.empty ? 'empty' : ''} ${col.isTotal ? 'total-label' : ''}`}>
+              {col.isTotal ? 'Total' : col.label}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="dept-metrics">
+        {dept.metrics
+          .filter(k => {
+            const m = METRICS[k]
+            if (view === 'month' && m?.quarterOnly) return false
+            if (view === 'quarter' && m?.weekOnly) return false
+            return true
+          })
+          .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+      </div>
+    </div>
+  </div>
+)
 
 const HealthSummary = ({ columns }) => {
   let g = 0, y = 0, r = 0
@@ -491,12 +481,11 @@ function App() {
         return Math.floor(Date.UTC(monday.getFullYear(), monday.getMonth(), monday.getDate()) / (7 * 86400000))
       }
       const weekPositions = processed.map(w => getChronologicalWeek(parseScorecardDate(w.start)))
-      const monthFirstWeek = getChronologicalWeek(new Date(year, month, 1))
+      const firstMonday = new Date(year, month, 1)
+      firstMonday.setDate(firstMonday.getDate() + ((8 - firstMonday.getDay()) % 7))
+      const baseWeek = getChronologicalWeek(firstMonday)
       const monthLastWeek = getChronologicalWeek(new Date(year, month + 1, 0))
-      const firstWeek = weekPositions.length > 0 ? Math.min(...weekPositions) : monthFirstWeek
-      const baseWeek = Math.min(firstWeek, monthFirstWeek)
-      const totalSlots = monthLastWeek - baseWeek + 1
-      const slotCount = Math.max(totalSlots, weekPositions.length > 0 ? Math.max(...weekPositions) - baseWeek + 1 : 0)
+      const slotCount = monthLastWeek - baseWeek + 1
       const slots = Array.from({ length: slotCount }, () => ({ label: '—', empty: true }))
 
       processed.forEach((w, index) => {
