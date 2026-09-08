@@ -28,8 +28,7 @@ const METRICS = {
 
   // Marketing (Tobias) - Instagram metrics. Average Reel Views is weighted by the number
   // of reels published in each week so month and quarter rollups remain per-reel averages.
-  // No performance bands have been set yet, so values render neutrally.
-  avgReelViews:   { name: 'Avg. Reel Views',  icon: '▶️', unit: '',   dir: 'higher', agg: 'avg', weightBy: 'reelsPublished', neutral: true, desc: 'Average lifetime views, measured on Monday, for reels published during the previous week. Monthly and quarterly values are weighted by the number of reels published.' },
+  avgReelViews:   { name: 'Avg. Reel Views',  icon: '▶️', unit: '',   dir: 'higher', green: 1000, yellow: 500, agg: 'avg', weightBy: 'reelsPublished', desc: 'Average lifetime views, measured on Monday, for reels published during the previous week. green >=1,000, yellow 500-999, red <500. Monthly and quarterly values are weighted by the number of reels published.' },
   hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (thresholds set 2026-07)' },
 
   // Automation (Shawn) - finalized green/yellow/red thresholds. "Requests Done" is a
