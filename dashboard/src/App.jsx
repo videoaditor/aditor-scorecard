@@ -7,11 +7,18 @@ const METRICS = {
   posts:          { name: 'IG Posts',           icon: '📱', unit: '',   dir: 'higher', green: 6,   yellow: 4, agg: 'sum', desc: 'Instagram posts from Meta API' },
   closeRate:      { name: 'Close Rate',        icon: '🎯', unit: '%',  dir: 'higher', green: 35,  yellow: 20, agg: 'avg', desc: '% of calls that convert to paying clients' },
   mrr:            { name: 'MRR',               icon: '📈', unit: '€',  dir: 'higher', green: 45000, yellow: 35000, agg: 'last', desc: 'Monthly recurring revenue from Stripe' },
+  assetIndex:     { name: 'Asset Index',        icon: '📦', unit: '%',  dir: 'higher', green: 30,  yellow: 20, agg: 'avg', breakdown: ['assetsCreated', 'assetsKept'], desc: 'Share of generated images and clips an editor actually downloaded and used. The honest test of whether the tools produce usable work.' },
+  assetsCreated:  { name: 'Created',            icon: '✨', unit: '',   dir: 'higher', green: 0,   yellow: 0, agg: 'sum', neutral: true, desc: 'Images and clips generated in the tools' },
+  assetsKept:     { name: 'Kept',               icon: '📥', unit: '',   dir: 'higher', green: 0,   yellow: 0, agg: 'sum', neutral: true, desc: 'Of those, the ones downloaded' },
+  costPerCard:    { name: 'Cost per Card',      icon: '💵', unit: '$',  dir: 'lower',  green: 8,   yellow: 12, agg: 'avg', desc: 'All AI spend divided by every card made (cardsDone). An average on purpose: assets cannot yet be attributed to a card, and Alan needs one fixed figure per card to compute margin (call 2026-09-24).' },
+  firstPassRate:  { name: 'First-pass Rate',    icon: '🔍', unit: '%',  dir: 'higher', green: 70,  yellow: 50, agg: 'avg', desc: 'Share of delivered cards that went through without a revision. Replaced the old Review Index on 2026-09-24: with the craft score gone that index sat near 100% every week and could not tell a good week from an average one.' },
+  videosReviewed: { name: 'Videos Reviewed',    icon: '👁️', unit: '',   dir: 'higher', green: 0,   yellow: 0, agg: 'sum', neutral: true, desc: 'Billable reviews, the same count the invoice uses' },
+  cutterVideos:   { name: 'Cutter Videos',      icon: '✂️', unit: '',   dir: 'higher', green: 0,   yellow: 0, agg: 'sum', neutral: true, desc: 'Videos cut by the Cutter, counted once per card' },
   cardsDone:      { name: 'Cards Done',        icon: '✅', unit: '',   dir: 'higher', green: 40,  yellow: 20, agg: 'sum', desc: 'Total cards completed derived from Trello' },
   cardsPerEditor: { name: 'Cards/Editor',        icon: '⚡', unit: '',   dir: 'higher', green: 10,  yellow: 5, agg: 'avg', desc: 'Average cards completed per editor' },
-  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', notIncentivized: true, desc: 'Avg. delivery time active \u2192 completed in hours. Shown for context on the CX card; NOT part of the CX incentive/green-week \u2014 delivery has many drivers beyond the tools (editor submission, revisions).' },
-  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.7, yellow: 0.5, agg: 'avg', breakdown: ['craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability'], desc: 'Auto Reviewer composite. review index = craft score / 10 \u2212 client revision rate. 1.0 = perfect. Data pending: needs the tool to emit reliability + client-revision-rate into Teable. Craft score IS in the index (Alan, CX call: overview = craft + client-revision); auto-review revision rate + reliability are tracked alongside, not in the index.' },
-  craftScore:     { name: 'Craft Score',         icon: '🎨', unit: '',   dir: 'higher', green: 7,   yellow: 5,  agg: 'avg', desc: 'Avg editor craft score (÷10), IN the index per Alan (CX call). Reflects editing craft; read revisions + reliability alongside it.' },
+  delivery:       { name: 'Delivery Time',      icon: '⏱️', unit: 'h',  dir: 'lower',  green: 48,  yellow: 72, agg: 'avg', desc: 'Avg. delivery time active \u2192 completed in hours. Part of the Production green week from 2026-09-24: with the tools rather than the review alone, this is the number they exist to move.' },
+  reviewIndex:    { name: 'Review Index',       icon: '🔍', unit: '',   dir: 'higher', green: 0.7, yellow: 0.5, agg: 'avg', breakdown: ['craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability'], desc: 'RETIRED from the Production card on 2026-09-24, kept as a diagnostic. With the craft score gone it read near 100% most weeks and could not separate a good week from an average one. First-pass Rate replaced it.' },
+  craftScore:     { name: 'Craft Score',         icon: '🎨', unit: '',   dir: 'higher', green: 7,   yellow: 5,  agg: 'avg', desc: 'Avg editor craft score (÷10). No longer produced; kept so old weeks still render.' },
   clientRevisionRate: { name: 'Client Revision Rate', icon: '↩️', unit: '%', dir: 'lower', green: 20, yellow: 40, agg: 'avg', desc: 'Client change-requests after the tool passed a video — brief-misses only (mind-changes excluded). Subtracted in the index. Primary quality signal. Data pending.' },
   autoReviewRevisionRate: { name: 'Auto-Review Revision Rate', icon: '🔁', unit: '%', dir: 'lower', green: 35, yellow: 55, agg: 'avg', desc: 'Rejected uploads ÷ all uploads (internal), weighted × (1 + editor growth). Tracked alongside; not in the index. Data pending.' },
   reliability:    { name: 'Reliability',          icon: '🛡️', unit: '%', dir: 'higher', green: 90, yellow: 80, agg: 'avg', desc: 'Tool runs without error, per ATTEMPT (events clustered per file/15min; a partly-failed submission = 0%, not a free 50%). Saskia’s metric, tracked alongside. Launch threshold deliberately forgiving — the real baseline is unknown (failures only captured from 2026-07-30; earlier weeks read an artificial 100%).' },
@@ -59,7 +66,7 @@ const DRI = {
 const DEPARTMENTS = [
   { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'avgReelViews', 'hotDms'] },
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',         name: 'CX', icon: '⭐', color: '#F59E0B', metrics: ['reviewIndex', 'delivery', 'wins', 'acquisitionRate'] },
+  { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', centered: true, metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
 ]
@@ -270,6 +277,7 @@ const fmt = (val, key) => {
     return abs >= 1000 ? `${sign}€${(val/1000).toFixed(1)}k` : `${sign}€${val}`
   }
   if (m.unit === '€') return val >= 1000 ? `€${(val/1000).toFixed(1)}k` : `€${val}`
+  if (m.unit === '$') return `$${val}`
   if (m.unit === 'h') return `${val}h`
   if (m.unit === 'd') return `${val}d`
   return kfmt(val)

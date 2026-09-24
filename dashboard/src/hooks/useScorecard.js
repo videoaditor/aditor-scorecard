@@ -18,6 +18,9 @@ const DIRECT_FIELDS = [
   'automationRequests', 'automationRequestsDone',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
+  // Production card (2026-09-24)
+  'assetIndex', 'assetsCreated', 'assetsKept', 'costPerCard', 'firstPassRate',
+  'videosReviewed', 'cutterVideos',
 ]
 
 // Renamed mappings: Teable field → internal key. The Automation metrics live on the

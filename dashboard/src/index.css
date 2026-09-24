@@ -238,7 +238,7 @@ body {
 }
 
 /* Automation (5th dept) sits on its own row, centered under the 2-col grid
-   (visually beneath Customer Success). One column wide = calc(50% - half the gap). */
+   (visually beneath Production). One column wide = calc(50% - half the gap). */
 .dept-card.dept-centered {
   grid-column: 1 / -1;
   justify-self: center;
