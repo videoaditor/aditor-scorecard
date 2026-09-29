@@ -16,6 +16,8 @@ const DIRECT_FIELDS = [
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor', 'editorChurn',
   'automationRequests', 'automationRequestsDone',
+  // Tech card (Allan, 2026-09-30): tasks from #to-do-tech-department, done = his ✅
+  'techRequests', 'techRequestsDone', 'techTurnaround',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
   // Production card (2026-09-24)
@@ -104,6 +106,10 @@ function postProcess(rows) {
     const reqDone = r.automationRequestsDone
     const reqIn = r.automationRequests
     r.automationRequests = (reqDone == null && reqIn == null) ? null : `${reqDone ?? 0}/${reqIn ?? 0}`
+    // Same derivation for the Tech card's "Tasks Done".
+    const techDone = r.techRequestsDone
+    const techIn = r.techRequests
+    r.techRequests = (techDone == null && techIn == null) ? null : `${techDone ?? 0}/${techIn ?? 0}`
     return r
   })
 }
