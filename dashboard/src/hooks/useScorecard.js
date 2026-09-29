@@ -17,7 +17,7 @@ const DIRECT_FIELDS = [
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor', 'editorChurn',
   'automationRequests', 'automationRequestsDone',
   // Tech card (Allan, 2026-09-30): tasks from #to-do-tech-department, done = his ✅
-  'techRequests', 'techRequestsDone', 'techTurnaround',
+  'techRequests', 'techRequestsDone', 'techResolveTime',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
   // Production card (2026-09-24)

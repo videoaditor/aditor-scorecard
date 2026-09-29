@@ -53,11 +53,10 @@ const METRICS = {
   // scaled by the number of weeks in the total - see getStatus.
   autoErrorRate:  { name: 'Critical Errors',  icon: '⚠️', unit: '',     dir: 'lower',  green: 1,  yellow: 3,  agg: 'sum', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3 per week' },
   automationRequests: { name: 'Requests Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Automation/feature requests completed vs incoming this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
-  // Tech (Allan) - the same two request rows as Automation, fed from the tasks posted in
-  // #to-do-tech-department. A task counts as done in the week Allan ticks it with ✅, and
-  // Turnaround runs from the post to that tick.
+  // Tech (Allan) - fed from the tasks posted in #to-do-tech-department. A task counts as
+  // done in the week Allan ticks it with ✅, and Resolve Time runs from the post to that tick.
   techRequests:   { name: 'Tasks Done',       icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Tasks from #to-do-tech-department ticked off with ✅ vs tasks posted this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
-  techTurnaround: { name: 'Turnaround Time',  icon: '🔄', unit: 'd',    dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', weightBy: 'techRequestsDone', desc: 'Avg days from a task being posted in #to-do-tech-department to its ✅. green <=3, yellow 3-6, red >6' },
+  techResolveTime: { name: 'Resolve Time',   icon: '⏱️', unit: 'h',    dir: 'lower',  green: 24, yellow: 72, agg: 'avg', weightBy: 'techRequestsDone', desc: 'Avg hours from a task being posted in #to-do-tech-department to its ✅. green <=24h, yellow 24-72h, red >72h' },
 }
 
 const DRI = {
@@ -75,7 +74,7 @@ const DEPARTMENTS = [
   { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
-  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', metrics: ['techRequests', 'techTurnaround'] },
+  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', metrics: ['techRequests', 'techResolveTime'] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
