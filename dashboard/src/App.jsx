@@ -65,7 +65,7 @@ const DEPARTMENTS = [
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
-  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', centered: true,
+  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', centered: true, live: true,
     // One card, two domains: Shawn's project/build work (from the vault board) and Allan's
     // maintenance (from #to-do-tech-department). `metrics` stays the flat union for the health
     // summary; `groups` drives the card's domain sections. `centered` puts this lone 5th card
@@ -306,7 +306,7 @@ const Avatar = ({ person }) => (
   </div>
 )
 
-const MetricRow = ({ metricKey, columns, view, sub = false }) => {
+const MetricRow = ({ metricKey, columns, view, sub = false, live = false }) => {
   const m = METRICS[metricKey]
   const [expanded, setExpanded] = useState(false)
   if (!m) return null
@@ -326,10 +326,13 @@ const MetricRow = ({ metricKey, columns, view, sub = false }) => {
     const filledWeeks = isTotal
       ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
       : 1
-    const status = isCurrent ? 'current' : getStatus(val, metricKey, filledWeeks)
-    const tintClass = (!isCurrent && !isTotal && status !== 'neutral') ? `cell-tint-${status}` : ''
+    // Live cards (e.g. Tech) carry a real, continuously-updated current week, so it is banded
+    // like a finalized week instead of shown as a dimmed grey placeholder.
+    const status = (isCurrent && !live) ? 'current' : getStatus(val, metricKey, filledWeeks)
+    const tintClass = (!isTotal && status !== 'neutral' && (!isCurrent || live)) ? `cell-tint-${status}` : ''
+    const currentClass = isCurrent ? (live ? 'current-week-live' : 'current-week') : ''
     return (
-      <div key={i} className={`metric-cell ${tintClass} ${isCurrent ? 'current-week' : ''} ${isTotal ? 'total-cell' : ''}`}>
+      <div key={i} className={`metric-cell ${tintClass} ${currentClass} ${isTotal ? 'total-cell' : ''}`}>
         <span className={`metric-value ${isTotal ? `total-value status-text-${status}` : `status-text-${status}`}`}>{fmt(val, metricKey)}</span>
       </div>
     )
@@ -351,7 +354,7 @@ const MetricRow = ({ metricKey, columns, view, sub = false }) => {
         <div className="metric-values">{cells}</div>
       </div>
       {hasBreakdown && expanded && m.breakdown.map(subKey => (
-        <MetricRow key={subKey} metricKey={subKey} columns={columns} view={view} sub />
+        <MetricRow key={subKey} metricKey={subKey} columns={columns} view={view} sub live={live} />
       ))}
     </>
   )
@@ -391,10 +394,10 @@ const DeptCard = ({ dept, columns, view }) => {
                 <div className="metric-group-header">
                   <span className="metric-group-label">{g.label}</span>
                 </div>
-                {g.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+                {g.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} live={dept.live} />)}
               </div>
             ))
-          : dept.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+          : dept.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} live={dept.live} />)}
       </div>
     </div>
   </div>

@@ -729,6 +729,14 @@ body {
   opacity: 0.7;
 }
 
+/* Live current week (e.g. Tech): banded like a finalized week, full opacity, with a
+   subtle outline to signal it is the live/in-progress week rather than dimming it. */
+.metric-cell.current-week-live {
+  outline: 1px solid rgba(255, 255, 255, 0.10);
+  outline-offset: -1px;
+  border-radius: 6px;
+}
+
 /* Delta badge (hidden - removed from total column) */
 .delta-badge {
   display: none;
