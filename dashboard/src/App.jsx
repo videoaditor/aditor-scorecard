@@ -47,9 +47,9 @@ const METRICS = {
   // Tech card, Projects domain (Shawn) - non-maintenance cards on the vault board, fed by
   // tech-metrics.py. A card counts as done the week it enters the board's Done column;
   // Resolve Time is in days. In Progress is a live snapshot (agg 'last'), not a weekly total.
-  techProjectRequests:    { name: 'Projects Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
+  techProjectRequests:    { name: 'Projects Done', icon: '📥', unit: 'frac', dir: 'higher', green: 90, yellow: 60, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green >=90%, yellow 60-89%, red <60%' },
   techProjectInProgress:  { name: 'In Progress',   icon: '🏗️', unit: '',    dir: 'lower',  agg: 'last', neutral: true, desc: 'Project cards sitting in the board’s In Progress lane right now (live snapshot).' },
-  techProjectResolveTime: { name: 'Resolve Time',  icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 7,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=3d, yellow 3-7d, red >7d' },
+  techProjectResolveTime: { name: 'Resolve Time',  icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 5,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=72h (3d), yellow 72h-5d, red >5d' },
 }
 
 const DRI = {
