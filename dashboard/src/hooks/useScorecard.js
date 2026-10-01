@@ -16,8 +16,11 @@ const DIRECT_FIELDS = [
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor', 'editorChurn',
   'automationRequests', 'automationRequestsDone',
-  // Tech card (Allan, 2026-09-30): tasks from #to-do-tech-department, done = his ✅
+  // Tech card, Maintenance domain (Allan): tasks from #to-do-tech-department, done = his ✅
   'techRequests', 'techRequestsDone', 'techResolveTime',
+  // Tech card, Projects domain (Shawn): non-maintenance cards on the vault board, written
+  // locally by automations/task-scan/tech-metrics.py. ResolveTime is in DAYS.
+  'techProjectRequests', 'techProjectRequestsDone', 'techProjectResolveTime',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
   // Production card (2026-09-24)
@@ -106,10 +109,14 @@ function postProcess(rows) {
     const reqDone = r.automationRequestsDone
     const reqIn = r.automationRequests
     r.automationRequests = (reqDone == null && reqIn == null) ? null : `${reqDone ?? 0}/${reqIn ?? 0}`
-    // Same derivation for the Tech card's "Tasks Done".
+    // Same derivation for the Tech card's Maintenance "Tasks Done".
     const techDone = r.techRequestsDone
     const techIn = r.techRequests
     r.techRequests = (techDone == null && techIn == null) ? null : `${techDone ?? 0}/${techIn ?? 0}`
+    // And the Tech card's Projects "Tasks Done".
+    const projDone = r.techProjectRequestsDone
+    const projIn = r.techProjectRequests
+    r.techProjectRequests = (projDone == null && projIn == null) ? null : `${projDone ?? 0}/${projIn ?? 0}`
     return r
   })
 }

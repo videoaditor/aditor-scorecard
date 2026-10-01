@@ -57,6 +57,10 @@ const METRICS = {
   // done in the week Allan ticks it with ✅, and Resolve Time runs from the post to that tick.
   techRequests:   { name: 'Tasks Done',       icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Tasks from #to-do-tech-department ticked off with ✅ vs tasks posted this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
   techResolveTime: { name: 'Resolve Time',   icon: '⏱️', unit: 'h',    dir: 'lower',  green: 24, yellow: 72, agg: 'avg', weightBy: 'techRequestsDone', desc: 'Avg hours from a task being posted in #to-do-tech-department to its ✅. green <=24h, yellow 24-72h, red >72h' },
+  // Projects (Shawn) - non-maintenance cards on the vault board, fed by tech-metrics.py.
+  // A card counts as done the week it enters the board's Done column; Resolve Time is in days.
+  techProjectRequests:    { name: 'Tasks Done',   icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
+  techProjectResolveTime: { name: 'Resolve Time', icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 7,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=3d, yellow 3-7d, red >7d' },
 }
 
 const DRI = {
@@ -65,7 +69,7 @@ const DRI = {
   cs:         [{ name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
   people:     [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
   automation: [{ name: 'Shawn', initials: 'SH', color: '#06B6D4', img: './avatars/shawn.jpg' }],
-  tech:       [{ name: 'Allan', initials: 'AL', color: '#3B82F6' }],
+  tech:       [{ name: 'Shawn', initials: 'SH', color: '#06B6D4', img: './avatars/shawn.jpg' }, { name: 'Allan', initials: 'AL', color: '#3B82F6' }],
 }
 
 const DEPARTMENTS = [
@@ -74,7 +78,15 @@ const DEPARTMENTS = [
   { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
   { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
-  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', metrics: ['techRequests', 'techResolveTime'] },
+  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6',
+    // One card, two domains: Shawn's project/build work (from the vault board) and Allan's
+    // maintenance (from #to-do-tech-department). `metrics` stays the flat union for the health
+    // summary; `groups` drives the card's domain sections.
+    metrics: ['techProjectRequests', 'techProjectResolveTime', 'techRequests', 'techResolveTime'],
+    groups: [
+      { label: 'Projects',    owner: 'Shawn', metrics: ['techProjectRequests', 'techProjectResolveTime'] },
+      { label: 'Maintenance', owner: 'Allan', metrics: ['techRequests', 'techResolveTime'] },
+    ] },
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -357,7 +369,14 @@ const MetricRow = ({ metricKey, columns, view, sub = false }) => {
   )
 }
 
-const DeptCard = ({ dept, columns, view }) => (
+const DeptCard = ({ dept, columns, view }) => {
+  const viewVisible = (k) => {
+    const m = METRICS[k]
+    if (view === 'month' && m?.quarterOnly) return false
+    if (view === 'quarter' && m?.weekOnly) return false
+    return true
+  }
+  return (
   <div className={`dept-card${dept.centered ? ' dept-centered' : ''}`} style={{ '--accent': dept.color }}>
     <div className="dept-header">
       <span className="dept-icon">{dept.icon}</span>
@@ -378,18 +397,22 @@ const DeptCard = ({ dept, columns, view }) => (
         </div>
       </div>
       <div className="dept-metrics">
-        {dept.metrics
-          .filter(k => {
-            const m = METRICS[k]
-            if (view === 'month' && m?.quarterOnly) return false
-            if (view === 'quarter' && m?.weekOnly) return false
-            return true
-          })
-          .map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+        {dept.groups
+          ? dept.groups.map(g => (
+              <div key={g.label} className="metric-group">
+                <div className="metric-group-header">
+                  <span className="metric-group-label">{g.label}</span>
+                  {g.owner && <span className="metric-group-owner">{g.owner}</span>}
+                </div>
+                {g.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
+              </div>
+            ))
+          : dept.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
       </div>
     </div>
   </div>
-)
+  )
+}
 
 const HealthSummary = ({ columns }) => {
   let g = 0, y = 0, r = 0
