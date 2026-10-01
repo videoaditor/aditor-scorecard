@@ -25,12 +25,16 @@ const DIRECT_FIELDS = [
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
   // Production card (2026-09-24)
   'assetIndex', 'assetsCreated', 'assetsKept', 'costPerCard', 'firstPassRate',
-  'videosReviewed', 'cutterVideos',
+  'cutterVideos',
 ]
 
 // Renamed mappings: Teable field → internal key.
 const RENAMED_FIELDS = {
   clientCpl: 'cpl',
+  // The feedback-agent writes the review count to `totalReviews` (there is no `videosReviewed`
+  // column), so the "Videos Reviewed" row reads that. Mapped here rather than in DIRECT_FIELDS
+  // so it overrides cleanly.
+  totalReviews: 'videosReviewed',
 }
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages
