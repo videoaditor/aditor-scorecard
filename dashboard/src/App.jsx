@@ -61,10 +61,11 @@ const DRI = {
 }
 
 const DEPARTMENTS = [
-  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', metrics: ['posts', 'followers', 'avgReelViews', 'hotDms'] },
-  { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
-  { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
-  { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
+  // live: the writers now fill the current week hourly, so its cell is banded (not grey).
+  { id: 'marketing',  name: 'Marketing',        icon: '📣', color: '#8B5CF6', live: true, metrics: ['posts', 'followers', 'avgReelViews', 'hotDms'] },
+  { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', live: true, metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
+  { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', live: true, metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
+  { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', live: true, metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
   { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', centered: true, live: true,
     // One card, two domains: Shawn's project/build work (from the vault board) and Allan's
     // maintenance (from #to-do-tech-department). `metrics` stays the flat union for the health
