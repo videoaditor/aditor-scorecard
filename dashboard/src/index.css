@@ -237,7 +237,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Automation (5th dept) sits on its own row, centered under the 2-col grid
+/* The lone 5th card (Tech) sits on its own row, centered under the 2-col grid
    (visually beneath Production). One column wide = calc(50% - half the gap). */
 .dept-card.dept-centered {
   grid-column: 1 / -1;
@@ -621,12 +621,6 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
-}
-.metric-group-owner {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-dim);
 }
 
 .metric-label {

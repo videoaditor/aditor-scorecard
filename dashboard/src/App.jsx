@@ -38,29 +38,18 @@ const METRICS = {
   avgReelViews:   { name: 'Avg. Reel Views',  icon: '▶️', unit: '',   dir: 'higher', green: 1000, yellow: 500, agg: 'avg', weightBy: 'reelsPublished', desc: 'Average lifetime views, measured on Monday, for reels published during the previous week. green >=1,000, yellow 500-999, red <500. Monthly and quarterly values are weighted by the number of reels published.' },
   hotDms:         { name: 'Hot DMs',          icon: '🔥', unit: '',   dir: 'higher', green: 10, yellow: 5, agg: 'sum', desc: 'Classified hot inbound Instagram DMs per week (ads / booking a call / pricing) from the IG collector. green >=10, yellow 5-9, red <5 (thresholds set 2026-07)' },
 
-  // Automation (Shawn) - finalized green/yellow/red thresholds. "Requests Done" is a
-  // done/incoming completion ratio (frac) colored by percent, like Acquisition Rate.
-  // Turnaround and Resolve Time are per-week AVERAGES over a cohort, so rolling them up
-  // needs a weighted mean (`weightBy` = the row field holding that week's cohort size).
-  // An unweighted mean of weekly means over-weights quiet weeks: 3.1d over 4 deliveries
-  // and 4.5d over 2 is 3.6d, not 3.8d. Resolve Time is weighted by the week's incident
-  // count, which is exactly its cohort whenever every incident reported that week was
-  // also resolved, and a close proxy when one is still open.
-  autoTurnaround: { name: 'Turnaround Time',  icon: '🔄', unit: 'd',    dir: 'lower',  green: 3,  yellow: 6,  agg: 'avg', weightBy: 'automationRequestsDone', desc: 'Avg automation-request turnaround in days. green <=3, yellow 3-6, red >6' },
-  autoIncident:   { name: 'Resolve Time',     icon: '🚨', unit: 'h',    dir: 'lower',  green: 12, yellow: 24, agg: 'avg', weightBy: 'autoErrorRate', desc: 'Avg incident resolution time in hours. green <=12, yellow 12-24, red >24' },
-  // A COUNT of incidents, so it SUMS across weeks (it was 'avg' until 2026-08-10, which
-  // rendered a monthly total of "1.5 critical errors"). Thresholds are per week and are
-  // scaled by the number of weeks in the total - see getStatus.
-  autoErrorRate:  { name: 'Critical Errors',  icon: '⚠️', unit: '',     dir: 'lower',  green: 1,  yellow: 3,  agg: 'sum', desc: 'Deduped incidents per week (n8n cloud + self-host + Slack; warnings excluded). Data-driven from Teable; green <=1, yellow 2-3, red >3 per week' },
-  automationRequests: { name: 'Requests Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Automation/feature requests completed vs incoming this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
-  // Tech (Allan) - fed from the tasks posted in #to-do-tech-department. A task counts as
-  // done in the week Allan ticks it with ✅, and Resolve Time runs from the post to that tick.
+  // Tech card, Maintenance domain (Allan) - fed from the tasks posted in #to-do-tech-department.
+  // A task counts as done in the week Allan ticks it with ✅, and Resolve Time runs from the
+  // post to that tick. Resolve Time is a per-week AVERAGE over a cohort, so rolling it up needs
+  // a weighted mean (`weightBy` = the row field holding that week's cohort size).
   techRequests:   { name: 'Tasks Done',       icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Tasks from #to-do-tech-department ticked off with ✅ vs tasks posted this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
   techResolveTime: { name: 'Resolve Time',   icon: '⏱️', unit: 'h',    dir: 'lower',  green: 24, yellow: 72, agg: 'avg', weightBy: 'techRequestsDone', desc: 'Avg hours from a task being posted in #to-do-tech-department to its ✅. green <=24h, yellow 24-72h, red >72h' },
-  // Projects (Shawn) - non-maintenance cards on the vault board, fed by tech-metrics.py.
-  // A card counts as done the week it enters the board's Done column; Resolve Time is in days.
-  techProjectRequests:    { name: 'Tasks Done',   icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
-  techProjectResolveTime: { name: 'Resolve Time', icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 7,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=3d, yellow 3-7d, red >7d' },
+  // Tech card, Projects domain (Shawn) - non-maintenance cards on the vault board, fed by
+  // tech-metrics.py. A card counts as done the week it enters the board's Done column;
+  // Resolve Time is in days. In Progress is a live snapshot (agg 'last'), not a weekly total.
+  techProjectRequests:    { name: 'Projects Done', icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
+  techProjectInProgress:  { name: 'In Progress',   icon: '🏗️', unit: '',    dir: 'lower',  agg: 'last', neutral: true, desc: 'Project cards sitting in the board’s In Progress lane right now (live snapshot).' },
+  techProjectResolveTime: { name: 'Resolve Time',  icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 7,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=3d, yellow 3-7d, red >7d' },
 }
 
 const DRI = {
@@ -68,7 +57,6 @@ const DRI = {
   sales:      [{ name: 'Alan', initials: 'AS', color: '#F97316', img: './avatars/alan.jpg' }],
   cs:         [{ name: 'Saskia', initials: 'SA', color: '#F97316', img: './avatars/saskia.jpg' }],
   people:     [{ name: 'Tim', initials: 'TI', color: '#22C55E', img: './avatars/tim.jpg' }],
-  automation: [{ name: 'Shawn', initials: 'SH', color: '#06B6D4', img: './avatars/shawn.jpg' }],
   tech:       [{ name: 'Shawn', initials: 'SH', color: '#06B6D4', img: './avatars/shawn.jpg' }, { name: 'Allan', initials: 'AL', color: '#3B82F6' }],
 }
 
@@ -77,15 +65,15 @@ const DEPARTMENTS = [
   { id: 'sales',      name: 'Sales',            icon: '💰', color: '#F97316', metrics: ['cpl', 'calls', 'callBookRate', 'costPerCall', 'closeRate', 'mrr'] },
   { id: 'cs',         name: 'Production', icon: '🎬', color: '#F59E0B', metrics: ['assetIndex', 'costPerCard', 'firstPassRate', 'delivery', 'videosReviewed', 'cutterVideos'] },
   { id: 'people',     name: 'People',           icon: '👥', color: '#22C55E', metrics: ['applicants', 'newHires', 'activeEditors', 'goodEditors', 'cardsPerEditor', 'editorChurn'] },
-  { id: 'automation', name: 'Automation',       icon: '🤖', color: '#06B6D4', metrics: ['automationRequests', 'autoTurnaround', 'autoErrorRate', 'autoIncident'] },
-  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6',
+  { id: 'tech',       name: 'Tech',             icon: '🛠️', color: '#3B82F6', centered: true,
     // One card, two domains: Shawn's project/build work (from the vault board) and Allan's
     // maintenance (from #to-do-tech-department). `metrics` stays the flat union for the health
-    // summary; `groups` drives the card's domain sections.
-    metrics: ['techProjectRequests', 'techProjectResolveTime', 'techRequests', 'techResolveTime'],
+    // summary; `groups` drives the card's domain sections. `centered` puts this lone 5th card
+    // on its own row, centered, like the old Automation card.
+    metrics: ['techProjectRequests', 'techProjectInProgress', 'techProjectResolveTime', 'techRequests', 'techResolveTime'],
     groups: [
-      { label: 'Projects',    owner: 'Shawn', metrics: ['techProjectRequests', 'techProjectResolveTime'] },
-      { label: 'Maintenance', owner: 'Allan', metrics: ['techRequests', 'techResolveTime'] },
+      { label: 'Projects',    metrics: ['techProjectRequests', 'techProjectInProgress', 'techProjectResolveTime'] },
+      { label: 'Maintenance', metrics: ['techRequests', 'techResolveTime'] },
     ] },
 ]
 
@@ -402,7 +390,6 @@ const DeptCard = ({ dept, columns, view }) => {
               <div key={g.label} className="metric-group">
                 <div className="metric-group-header">
                   <span className="metric-group-label">{g.label}</span>
-                  {g.owner && <span className="metric-group-owner">{g.owner}</span>}
                 </div>
                 {g.metrics.filter(viewVisible).map(k => <MetricRow key={k} metricKey={k} columns={columns} view={view} />)}
               </div>

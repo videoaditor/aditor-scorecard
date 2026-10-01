@@ -15,12 +15,12 @@ const DIRECT_FIELDS = [
   'callBookRate', 'costPerCall', 'closeRate', 'mrr',
   'cardsDone', 'delivery', 'wins', 'newHires', 'testStarts', 'newSubs',
   'applicants', 'goodEditors', 'activeEditors', 'cardsPerEditor', 'editorChurn',
-  'automationRequests', 'automationRequestsDone',
   // Tech card, Maintenance domain (Allan): tasks from #to-do-tech-department, done = his ✅
   'techRequests', 'techRequestsDone', 'techResolveTime',
   // Tech card, Projects domain (Shawn): non-maintenance cards on the vault board, written
-  // locally by automations/task-scan/tech-metrics.py. ResolveTime is in DAYS.
-  'techProjectRequests', 'techProjectRequestsDone', 'techProjectResolveTime',
+  // locally by automations/task-scan/tech-metrics.py. ResolveTime is in DAYS; InProgress is
+  // a live snapshot written only to the current week.
+  'techProjectRequests', 'techProjectRequestsDone', 'techProjectResolveTime', 'techProjectInProgress',
   // CX / Review Index components (Teable fields; render once collectors write them)
   'reviewIndex', 'craftScore', 'clientRevisionRate', 'autoReviewRevisionRate', 'reliability',
   // Production card (2026-09-24)
@@ -28,16 +28,9 @@ const DIRECT_FIELDS = [
   'videosReviewed', 'cutterVideos',
 ]
 
-// Renamed mappings: Teable field → internal key. The Automation metrics live on the
-// scorecard table as `turnaroundTime` / `incidentResolution` / `criticalErrors` (NOT the
-// dashboard's `auto*` display keys); map them so real Automation data actually renders.
-// The Teable fields were renamed 2026-07-07 when the n8n automations took over writing
-// them (previously `turnaround` / `automationErrors`).
+// Renamed mappings: Teable field → internal key.
 const RENAMED_FIELDS = {
   clientCpl: 'cpl',
-  turnaroundTime: 'autoTurnaround',
-  incidentResolution: 'autoIncident',
-  criticalErrors: 'autoErrorRate',
 }
 
 // Teable stores these as 0-1 ratios; frontend expects 0-100 percentages
@@ -104,12 +97,7 @@ function postProcess(rows) {
     const ns = r.newSubs ?? 0
     const ts = r.testStarts ?? 0
     r.acquisitionRate = `${ns}/${ts}`
-    // Derive "Requests Done" as a done/incoming ratio string (dash when neither exists).
-    // automationRequests held the raw incoming until here; automationRequestsDone the done.
-    const reqDone = r.automationRequestsDone
-    const reqIn = r.automationRequests
-    r.automationRequests = (reqDone == null && reqIn == null) ? null : `${reqDone ?? 0}/${reqIn ?? 0}`
-    // Same derivation for the Tech card's Maintenance "Tasks Done".
+    // Derivation for the Tech card's Maintenance "Tasks Done".
     const techDone = r.techRequestsDone
     const techIn = r.techRequests
     r.techRequests = (techDone == null && techIn == null) ? null : `${techDone ?? 0}/${techIn ?? 0}`
