@@ -6,9 +6,8 @@ name = "aditor-scorecard"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = "dist"
 
-# Gate session store (Cloudflare Workers KV), in the same account as the
-# aditor-brain-guide gate. Create it once and paste the id here - see
-# DEPLOY-AUTH-GATE.md (step: create the KV namespace).
+# Gate session store (Cloudflare Workers KV) "aditor-scorecard-sessions", created
+# 2026-10-06 in the Aditor account (caf450765) with CF_SVCTOKEN_KV_ADMIN_ADITOR.
 [[kv_namespaces]]
 binding = "AUTH_SESSIONS"
-id = "REPLACE_WITH_SCORECARD_KV_ID"
+id = "888a668997dd4061a9c745645aeb816d"
