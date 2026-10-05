@@ -12,6 +12,7 @@ Do not remove Access, and do not move the domain, until the new gate is live and
 - `dashboard/functions/api/scorecard/records.ts` - a server-side proxy for the single scorecard read. The token lives in the Pages project, never in the bundle.
 - `dashboard/src/hooks/useScorecard.js` - now reads from the same-origin proxy (`/api/scorecard/records`); the `VITE_TEABLE_*` client config is gone.
 - `dashboard/wrangler.toml`, `dashboard/tsconfig.json`, `dashboard/package.json` - CF Pages config, functions typecheck, `@videoaditor/auth` dependency.
+- `.github/workflows/deploy-dashboard.yml` - **removed**, so merging this branch does not publish the proxy-calling bundle to GitHub Pages (where the Function can't run). GitHub Pages stays frozen on the last working bundle (behind Access) until the domain is flipped. Push-to-deploy becomes CF Pages Git integration.
 
 Verified locally (Node 22): hermetic build green, functions typecheck green, `wrangler pages functions build` compiles, and the built bundle contains no token and calls `/api/scorecard/records`.
 
@@ -92,7 +93,7 @@ In Teable (base `bsedpj9rQtsQFsPC3xm`):
 
 Once score.aditor.ai is confirmed on CF Pages:
 
-- Delete `.github/workflows/deploy-dashboard.yml` (the gh-pages publisher) - push-to-deploy is now CF Pages Git integration.
+- (`deploy-dashboard.yml` is already removed in this branch; push-to-deploy is CF Pages Git integration.)
 - Delete the `gh-pages` branch (local and origin) and turn off GitHub Pages for the repo; this also stops serving the bundle that still contains the old (now-revoked) token.
 - Delete the stale repo-root build bundle (`index.html`, `assets/`, `avatars/`, `castles/`, `editors/`, `CNAME`); it never deployed and is a trap for a CF root-directory misconfig. Confirm no bookmark depends on it first.
 - Remove the now-unused `VITE_TEABLE_*` repo secrets from `videoaditor/aditor-scorecard`; the token is no longer built into the client.
