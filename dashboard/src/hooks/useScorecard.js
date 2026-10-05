@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const TEABLE_URL = import.meta.env.VITE_TEABLE_URL || ''
-const TEABLE_TOKEN = import.meta.env.VITE_TEABLE_TOKEN || ''
-const TABLE_ID = import.meta.env.VITE_TEABLE_TABLE_ID || ''
+// The scorecard data is read through a same-origin proxy (a Cloudflare Pages
+// Function) that holds the data-source token server-side, so no token ships in
+// this bundle. The request carries the gate's session cookie, so only a signed-in
+// internal viewer receives data; an expired session returns 401 and the dashboard
+// surfaces the error until the page is reloaded to sign in again.
+const SCORECARD_ENDPOINT = '/api/scorecard/records'
 
 // Direct field mappings: Teable field name === internal key.
 // Fields absent in Teable map to null (toNum), so the dashboard renders them as a
@@ -113,18 +116,14 @@ function postProcess(rows) {
   })
 }
 
-async function fetchFromTeable() {
-  if (!TEABLE_URL || !TEABLE_TOKEN || !TABLE_ID) {
-    throw new Error('Teable not configured — set VITE_TEABLE_URL, VITE_TEABLE_TOKEN, VITE_TEABLE_TABLE_ID in .env')
-  }
-
-  const url = `${TEABLE_URL}/api/table/${TABLE_ID}/record`
-  const res = await fetch(url, {
-    headers: { 'Authorization': `Bearer ${TEABLE_TOKEN}` },
+async function fetchScorecard() {
+  const res = await fetch(SCORECARD_ENDPOINT, {
+    headers: { 'Accept': 'application/json' },
+    credentials: 'same-origin',
   })
 
   if (!res.ok) {
-    throw new Error(`Teable API error: ${res.status} ${res.statusText}`)
+    throw new Error(`Scorecard API error: ${res.status} ${res.statusText}`)
   }
 
   const data = await res.json()
@@ -150,7 +149,7 @@ export default function useScorecard() {
   const load = useCallback(async (isManual = false) => {
     if (isManual) setSyncing(true)
     try {
-      const weeks = await fetchFromTeable()
+      const weeks = await fetchScorecard()
       setData(weeks)
       setLastSynced(new Date())
       setError(null)
