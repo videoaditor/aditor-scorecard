@@ -1,0 +1,14 @@
+# Cloudflare Pages config for the gated scorecard.
+# The project root directory is this "dashboard" folder (set in the Pages project
+# settings); the build command is `npm run build` and the output is `dist`.
+# functions/ holds the edge gate (_middleware.ts) and the Teable proxy.
+name = "aditor-scorecard"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "dist"
+
+# Gate session store (Cloudflare Workers KV), in the same account as the
+# aditor-brain-guide gate. Create it once and paste the id here - see
+# DEPLOY-AUTH-GATE.md (step: create the KV namespace).
+[[kv_namespaces]]
+binding = "AUTH_SESSIONS"
+id = "REPLACE_WITH_SCORECARD_KV_ID"
