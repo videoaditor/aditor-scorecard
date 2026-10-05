@@ -42,12 +42,12 @@ const METRICS = {
   // A task counts as done in the week Allan ticks it with ✅, and Resolve Time runs from the
   // post to that tick. Resolve Time is a per-week AVERAGE over a cohort, so rolling it up needs
   // a weighted mean (`weightBy` = the row field holding that week's cohort size).
-  techRequests:   { name: 'Tasks Done',       icon: '📥', unit: 'frac', dir: 'higher', green: 100, yellow: 50, agg: 'frac', desc: 'Tasks from #to-do-tech-department ticked off with ✅ vs tasks posted this week (done/incoming); colored by completion %. green 100%, yellow 50-99%, red <50%' },
+  techRequests:   { name: 'Tasks Done',       icon: '📥', unit: 'frac', dir: 'higher', green: 70, yellow: 40, agg: 'frac', desc: 'Tasks from #to-do-tech-department ticked off with ✅ this week vs the OPEN task backlog during the week (unfinished tasks carry forward); colored by weekly burndown %. green >=70%, yellow 40-69%, red <40% (set 2026-10-05: most maintenance closes same week, so burndown stays high). Revisit as carry-over data accrues.' },
   techResolveTime: { name: 'Resolve Time',   icon: '⏱️', unit: 'h',    dir: 'lower',  green: 24, yellow: 72, agg: 'avg', weightBy: 'techRequestsDone', desc: 'Avg hours from a task being posted in #to-do-tech-department to its ✅. green <=24h, yellow 24-72h, red >72h' },
   // Tech card, Projects domain (Shawn) - non-maintenance cards on the vault board, fed by
   // tech-metrics.py. A card counts as done the week it enters the board's Done column;
   // Resolve Time is in days. In Progress is a live snapshot (agg 'last'), not a weekly total.
-  techProjectRequests:    { name: 'Projects Done', icon: '📥', unit: 'frac', dir: 'higher', green: 90, yellow: 60, agg: 'frac', desc: 'Project/build tasks moved to Done vs added this week on the vault board (done/incoming); colored by completion %. green >=90%, yellow 60-89%, red <60%' },
+  techProjectRequests:    { name: 'Projects Done', icon: '📥', unit: 'frac', dir: 'higher', green: 20, yellow: 10, agg: 'frac', desc: 'Project/build cards moved to Done this week vs the OPEN project backlog during the week (unfinished cards carry forward); colored by weekly burndown %. PROVISIONAL (set 2026-10-05 from one clean week ~13%, multi-day work so burndown is low): green >=20%, yellow 10-19%, red <10%. Revisit after ~4 weeks of carry-over data.' },
   techProjectInProgress:  { name: 'In Progress',   icon: '🏗️', unit: '',    dir: 'lower',  agg: 'last', neutral: true, desc: 'Project cards sitting in the board’s In Progress lane right now (live snapshot).' },
   techProjectResolveTime: { name: 'Resolve Time',  icon: '⏱️', unit: 'd',    dir: 'lower',  green: 3,   yellow: 5,  agg: 'avg', weightBy: 'techProjectRequestsDone', desc: 'Avg days from a project card being added to its move into Done. green <=72h (3d), yellow 72h-5d, red >5d' },
 }
@@ -236,7 +236,16 @@ const addTotalColumn = (columns) => {
 }
 
 // weekCount: how many weeks contributed to this value (for scaling sum thresholds)
-const getStatus = (value, key, weekCount = 1) => {
+// Fraction of the current ISO week (Mon-Sun, Europe/Berlin) that has elapsed, counted in whole
+// days: Monday = 1 ... Sunday = 7. Used to pro-rate live current-week thresholds for accumulating
+// (sum) metrics so a partial week is scored against pace, not the full-week target.
+const weekElapsedDays = () => {
+  const berlinDateStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' })
+  const dow = (new Date(berlinDateStr + 'T00:00:00Z').getUTCDay() + 6) % 7 // 0 = Monday
+  return dow + 1 // Monday = 1 ... Sunday = 7
+}
+
+const getStatus = (value, key, weekCount = 1, prorate = 1) => {
   if (value === null || value === undefined) return 'neutral'
   const m = METRICS[key]
   if (!m) return 'neutral'
@@ -252,7 +261,10 @@ const getStatus = (value, key, weekCount = 1) => {
   // Scale thresholds for sum metrics when showing totals across multiple weeks. This has
   // to apply in BOTH directions: a 'lower' sum metric (Critical Errors) compared against a
   // per-week threshold would go red on any total above 3, however many weeks it covers.
-  const scale = (m.agg === 'sum') ? Math.max(1, weekCount) : 1
+  // `prorate` (<1) additionally scales a sum metric's threshold to the elapsed fraction of an
+  // in-progress week, so a partial live count is judged against pace, not the full-week target.
+  // It is 1 for finalized weeks and for non-sum metrics.
+  const scale = (m.agg === 'sum') ? Math.max(1, weekCount) * prorate : 1
   if (m.dir === 'higher') {
     if (value >= m.green * scale) return 'green'
     if (value >= m.yellow * scale) return 'yellow'
@@ -328,8 +340,25 @@ const MetricRow = ({ metricKey, columns, view, sub = false, live = false }) => {
       ? columns.filter(c => !c.empty && !c.isCurrent && !c.isTotal && c[metricKey] != null).length
       : 1
     // Live cards (e.g. Tech) carry a real, continuously-updated current week, so it is banded
-    // like a finalized week instead of shown as a dimmed grey placeholder.
-    const status = (isCurrent && !live) ? 'current' : getStatus(val, metricKey, filledWeeks)
+    // like a finalized week instead of shown as a dimmed grey placeholder. But an accumulating
+    // (sum) metric in an in-progress week has only earned a fraction of its weekly target, so it
+    // is judged against that pace (threshold * elapsed-fraction) rather than the full week - which
+    // otherwise paints every count red early in the week. Monday is too early to score a weekly
+    // count at all, so it stays neutral until Tuesday. Point-in-time (last) and average (avg)
+    // metrics are already meaningful mid-week and band normally.
+    let prorate = 1, earlyNeutral = false
+    if (isCurrent && live && !m.neutral && (m.agg === 'sum' || m.agg === 'frac')) {
+      const days = weekElapsedDays()
+      // Monday is too early to score a weekly count or a done/open ratio - nothing has had the
+      // chance to accrue yet - so leave it neutral until Tuesday.
+      if (days <= 1) earlyNeutral = true
+      // Sum metrics accrue linearly, so from Tuesday on they are judged against pace. A frac
+      // (completion ratio) cannot be linearly pro-rated, so it bands normally once past Monday.
+      else if (m.agg === 'sum') prorate = days / 7
+    }
+    const status = (isCurrent && !live) ? 'current'
+      : earlyNeutral ? 'neutral'
+      : getStatus(val, metricKey, filledWeeks, prorate)
     const tintClass = (!isTotal && status !== 'neutral' && (!isCurrent || live)) ? `cell-tint-${status}` : ''
     const currentClass = isCurrent ? (live ? 'current-week-live' : 'current-week') : ''
     return (
