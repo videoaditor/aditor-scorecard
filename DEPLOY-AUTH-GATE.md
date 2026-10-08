@@ -95,7 +95,7 @@ Once score.aditor.ai is confirmed on CF Pages:
 
 - (`deploy-dashboard.yml` is already removed in this branch; push-to-deploy is CF Pages Git integration.)
 - Delete the `gh-pages` branch (local and origin) and turn off GitHub Pages for the repo; this also stops serving the bundle that still contains the old (now-revoked) token.
-- Delete the stale repo-root build bundle (`index.html`, `assets/`, `avatars/`, `castles/`, `editors/`, `CNAME`); it never deployed and is a trap for a CF root-directory misconfig. Confirm no bookmark depends on it first.
+- (The stale repo-root build bundle - `index.html`, `assets/`, `avatars/`, `castles/`, `editors/`, `CNAME` - is already deleted in this branch; it never deployed and was a trap for a CF root-directory misconfig.)
 - Remove the now-unused `VITE_TEABLE_*` repo secrets from `videoaditor/aditor-scorecard`; the token is no longer built into the client.
 
 ## Rollback
